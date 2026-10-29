@@ -98,7 +98,7 @@ h3{font-size:16px;font-weight:500;margin:30px 0 10px}
 .ins{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 18px}
 .ins div{font-size:13px;color:var(--muted)}
 .ins strong{display:block;font-size:20px;font-weight:500;color:var(--ink)}
-.up{color:#d93025}.dn{color:#188038}
+.up{color:#FF3B30}.dn{color:#34C759}
 :root[data-theme="dark"] .up{color:#f28b82}
 :root[data-theme="dark"] .dn{color:#81c995}
 .mrow{cursor:pointer}.mrow:hover,.mrow.on{background:var(--soft)}
@@ -318,8 +318,8 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 
 /* ===== Apple Human Interface layer (final) ===== */
 :root{--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
---bg:#f5f5f7;--surface:#fff;--ink:#1d1d1f;--muted:#6e6e73;--line:rgba(0,0,0,.12);--fill:rgba(118,118,128,.12);--soft:rgba(118,118,128,.12);--tint:rgba(0,113,227,.1);--accent:#0071e3;--accent-ink:#fff;--red:#d70015;--green:#248a3d;--orange:#ff9f0a;color-scheme:light}
-:root[data-theme="dark"]{--bg:#000;--surface:#1c1c1e;--ink:#f5f5f7;--muted:#98989d;--line:rgba(255,255,255,.14);--fill:rgba(118,118,128,.24);--soft:rgba(118,118,128,.24);--tint:rgba(41,151,255,.16);--accent:#2997ff;--accent-ink:#fff;--red:#ff6961;--green:#30d158;color-scheme:dark}
+--bg:#F2F2F7;--surface:#FFFFFF;--ink:#000000;--muted:rgba(60,60,67,.6);--line:rgba(60,60,67,.29);--fill:rgba(120,120,128,.2);--soft:rgba(120,120,128,.12);--tint:rgba(0,122,255,.12);--accent:#007AFF;--accent-ink:#FFFFFF;--red:#FF3B30;--green:#34C759;--orange:#FF9500;--yellow:#FFCC00;--ongreen:#34C759;color-scheme:light}
+:root[data-theme="dark"]{--bg:#000000;--surface:#1C1C1E;--ink:#FFFFFF;--muted:rgba(235,235,245,.6);--line:rgba(84,84,88,.65);--fill:rgba(120,120,128,.36);--soft:rgba(120,120,128,.24);--tint:rgba(10,132,255,.18);--accent:#0A84FF;--accent-ink:#FFFFFF;--red:#FF453A;--green:#30D158;--orange:#FF9F0A;--yellow:#FFD60A;--ongreen:#30D158;color-scheme:dark}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font:400 17px/1.47 var(--sans);letter-spacing:-.022em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-variant-numeric:tabular-nums}
 button,input,select,textarea{font-family:var(--sans)}
@@ -358,7 +358,7 @@ h3{font:600 17px/1.3 var(--sans);letter-spacing:-.022em;margin:32px 0 12px}
 .seg{background:var(--fill);border-radius:10px;padding:2px;gap:0;margin:0}
 .seg button{min-height:32px;padding:0 18px;border-radius:8px;font:500 13px/1 var(--sans);letter-spacing:-.006em;color:var(--ink)}
 .seg button[aria-pressed="true"]{background:#fff;color:#000;box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04)}
-:root[data-theme="dark"] .seg button[aria-pressed="true"]{background:#636366;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.seg button[aria-pressed="true"]{--x:0}:root[data-theme="dark"] .seg button[aria-pressed="true"]{background:#636366;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.4)}
 .viewbar{margin-bottom:0}
 input[type=search],select,#calc input[type=text],.authcard input,#bform input:not([type=radio]):not([type=checkbox]){background-color:var(--fill);color:var(--ink);border:0;border-radius:10px;font:400 17px/1.3 var(--sans);letter-spacing:-.022em;min-height:44px;padding:0 14px}
 input[type=search]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m20 20-4.8-4.8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center;padding-left:40px;border-radius:12px}
@@ -370,9 +370,9 @@ select{-webkit-appearance:none;appearance:none;min-height:36px;padding:0 32px 0 
 input:focus-visible,select:focus-visible{outline:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 40%,transparent)}
 #calc input.bad{box-shadow:0 0 0 2px var(--red)}
 input[type=radio]{accent-color:var(--accent);width:22px;height:22px}
-input[type=checkbox],#bform input[type=checkbox]{-webkit-appearance:none!important;appearance:none!important;position:relative;flex:none;width:51px!important;height:31px!important;min-height:0!important;max-width:none!important;margin:0 12px 0 0!important;padding:0!important;border:0!important;border-radius:16px!important;background:rgba(120,120,128,.32)!important;cursor:pointer;vertical-align:middle;transition:background .25s}
+input[type=checkbox],#bform input[type=checkbox]{-webkit-appearance:none!important;appearance:none!important;position:relative;flex:none;width:51px!important;height:31px!important;min-height:0!important;max-width:none!important;margin:0 12px 0 0!important;padding:0!important;border:0!important;border-radius:16px!important;background:var(--fill)!important;cursor:pointer;vertical-align:middle;transition:background .25s}
 input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 3px 1px rgba(0,0,0,.06);transition:transform .25s cubic-bezier(.4,0,.2,1)}
-input[type=checkbox]:checked,#bform input[type=checkbox]:checked{background:#34c759!important}
+input[type=checkbox]:checked,#bform input[type=checkbox]:checked{background:var(--ongreen)!important}
 input[type=checkbox]:checked::after{transform:translateX(20px)}
 input[type=checkbox]:focus-visible{outline:4px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px;box-shadow:none}
 label.note:has(input[type=checkbox]){display:flex!important;align-items:center;font-size:15px;color:var(--ink);margin-top:16px}
@@ -405,16 +405,16 @@ td.d{color:var(--muted)}
 .ovr{background:color-mix(in srgb,var(--red) 14%,transparent)}
 .ctog{font:inherit;letter-spacing:inherit;border-radius:10px}
 .chev{width:20px;height:20px;color:var(--muted)}
-.bcard{background:var(--bg);border:0;border-radius:20px;padding:20px 24px 24px;--used:#007aff}
-.bcard[data-c="red"]{--used:#ff3b30}
-.bcard[data-c="yellow"]{--used:#ffcc00}
-.bcard[data-c="green"]{--used:#34c759}
-.bcard[data-c="blue"]{--used:#007aff}
-:root[data-theme="dark"] .bcard{--used:#0a84ff}
-:root[data-theme="dark"] .bcard[data-c="red"]{--used:#ff453a}
-:root[data-theme="dark"] .bcard[data-c="yellow"]{--used:#ffd60a}
-:root[data-theme="dark"] .bcard[data-c="green"]{--used:#30d158}
-:root[data-theme="dark"] .bcard[data-c="blue"]{--used:#0a84ff}
+.bcard{background:var(--bg);border:0;border-radius:20px;padding:20px 24px 24px;--used:#007AFF}
+.bcard[data-c="red"]{--used:#FF3B30}
+.bcard[data-c="yellow"]{--used:#FFCC00}
+.bcard[data-c="green"]{--used:#34C759}
+.bcard[data-c="blue"]{--used:#007AFF}
+:root[data-theme="dark"] .bcard{--used:#0A84FF}
+:root[data-theme="dark"] .bcard[data-c="red"]{--used:#FF453A}
+:root[data-theme="dark"] .bcard[data-c="yellow"]{--used:#FFD60A}
+:root[data-theme="dark"] .bcard[data-c="green"]{--used:#30D158}
+:root[data-theme="dark"] .bcard[data-c="blue"]{--used:#0A84FF}
 :root .bcard .ring .tr{stroke:color-mix(in srgb,var(--used) 20%,transparent)}
 :root .bcard .ring .pr{stroke:var(--used);stroke-linecap:round}
 .bcard h4{font:600 17px/1.3 var(--sans);letter-spacing:-.022em}
@@ -538,8 +538,8 @@ var RULES=[
 ["Fees & interest","#8c4a2f","interest|annual fee|late fee|membership fee|foreign transaction|fee"]
 ];
 var CATS=RULES.map(function(r){return r[0]}).concat([OTHER,PAY]);
-var COL={};RULES.forEach(function(r){COL[r[0]]=r[1]});Object.assign(COL,{"Eating out":"#FF9500","Groceries":"#34C759","Transport":"#007AFF","Travel":"#5856D6","Shopping":"#FFCC00","Subscriptions":"#AF52DE","Bills & utilities":"#30B0C7","Health & fitness":"#FF2D55","Entertainment":"#5AC8FA","Fees & interest":"#A2845E"});COL[OTHER]="#AEAEB2";COL[PAY]="#8FD6A4";
-function ink(h){var n=parseInt(h.slice(1),16),l=.299*(n>>16)+.587*(n>>8&255)+.114*(n&255);return l>150?"#202124":"#fff"}
+var COL={};RULES.forEach(function(r){COL[r[0]]=r[1]});var CL={"Eating out":"#FF9500","Groceries":"#34C759","Transport":"#007AFF","Travel":"#5856D6","Shopping":"#FFCC00","Subscriptions":"#AF52DE","Bills & utilities":"#30B0C7","Health & fitness":"#FF2D55","Entertainment":"#32ADE6","Fees & interest":"#A2845E"},CD={"Eating out":"#FF9F0A","Groceries":"#30D158","Transport":"#0A84FF","Travel":"#5E5CE6","Shopping":"#FFD60A","Subscriptions":"#BF5AF2","Bills & utilities":"#40C8E0","Health & fitness":"#FF375F","Entertainment":"#64D2FF","Fees & interest":"#AC8E68"};function setCols(t){var d=t==="dark",m=d?CD:CL;Object.keys(m).forEach(function(k){COL[k]=m[k]});COL[OTHER]="#8E8E93";COL[PAY]=d?"#30D158":"#34C759"}setCols(document.documentElement.dataset.theme);
+function ink(h){var n=parseInt(h.slice(1),16),l=.299*(n>>16)+.587*(n>>8&255)+.114*(n&255);return l>150?"#000":"#fff"}
 var S={raw:[],flip:false,over:{},tover:{},pend:null,fc:null,fm:null,q:"",all:false,auto:false};
 var $=function(i){return document.getElementById(i)};
 var gbp=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
@@ -726,7 +726,7 @@ document.addEventListener("change",function(e){var d=e.target.dataset;if(!d||d.t
 document.addEventListener("click",function(e){var b=e.target.closest("[data-p],[data-reset]");if(!b)return;
   if(b.dataset.reset!==undefined){delete S.tover[b.dataset.reset];saveRule("txn:"+b.dataset.reset,null);render();return}
   var p=S.pend;if(!p)return;if(b.dataset.p==="x"){S.pend=null;rows()}else setCat(p.tid,p.key,p.cat,b.dataset.p==="one")});
-function setTheme(t,save){document.documentElement.dataset.theme=t;var b=$("theme"),l=t==="dark"?"Switch to light mode":"Switch to dark mode";b.setAttribute("aria-label",l);b.title=l;if(save){try{localStorage.setItem("theme",t)}catch(e){}}}
+function setTheme(t,save){document.documentElement.dataset.theme=t;setCols(t);if(S.raw&&S.raw.length)render();var b=$("theme"),l=t==="dark"?"Switch to light mode":"Switch to dark mode";b.setAttribute("aria-label",l);b.title=l;if(save){try{localStorage.setItem("theme",t)}catch(e){}}}
 $("theme").onclick=function(){setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark",true)};
 setTheme(document.documentElement.dataset.theme||"light",false);
 $("flip").onchange=render;$("net").onchange=render;$("xlsx").onclick=exportXlsx;
