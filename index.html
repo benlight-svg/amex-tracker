@@ -149,6 +149,19 @@ select{padding:8px 16px;min-height:36px}
 .who{display:flex;align-items:center;gap:12px}
 .who .note{margin:0}
 @media(max-width:600px){#who{display:none}}
+.bgrp{margin:0 0 20px}
+.bhead{display:flex;justify-content:space-between;gap:12px;font-size:15px;margin-bottom:8px}
+.bbar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.bbar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.bbar.warn i{background:#f9ab00}.bbar.over i{background:#d93025}
+:root[data-theme="dark"] .bbar.over i{background:#f28b82}
+.ovr{font-weight:500;background:color-mix(in srgb,#d93025 14%,transparent)}
+#budsec .top{align-items:center}#budsec .top h2{margin:0 0 20px}
+#bform{margin:0 0 32px;padding:20px;border:1px solid var(--line);border-radius:12px}
+#bform[hidden]{display:none}
+#bform input:not([type=radio]){background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-height:40px;font:inherit;width:100%;max-width:220px}
+.bcats{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px 24px;margin-bottom:20px}
+.bcats label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
@@ -207,6 +220,13 @@ select{padding:8px 16px;min-height:36px}
     <div class="tw"><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="n">Amount</th></tr></thead><tbody id="rows"></tbody></table></div>
     <div class="bar"><button class="btn ghost" id="more" type="button" hidden>Show all</button><span class="note" id="count"></span></div>
   </section>
+<section class="panel" id="budsec"><div class="top"><h2>Budgets</h2><button class="btn ghost" id="bedit" type="button">Edit groups and budgets</button></div>
+<div id="bform" hidden></div>
+<div class="tools"><label class="note" for="bm">Month</label><select id="bm"></select></div>
+<div id="bcards"></div>
+<h3>Month by month against budget</h3>
+<div class="tw"><table id="btab"></table></div>
+<p class="note">Groups only change how spending is added up for budgets. Your categories and charts above stay exactly as they are. The first and last months in your data may be partial.</p></section>
 </div>
 <section class="panel" id="upsec" hidden><h2>Upload history</h2><div class="tw"><table><thead><tr><th>Uploaded</th><th>File</th><th>Period</th><th class="n">Rows in file</th><th class="n">New rows saved</th></tr></thead><tbody id="uprows"></tbody></table></div></section>
 </main>
@@ -323,7 +343,7 @@ function render(){
     cl.forEach(function(c){var v=mon[m][c]||0;tot+=v;if(v)segs+='<i title="'+esc(c)+" "+gbp0.format(v)+'" style="height:'+(v/mx*130)+"px;background:"+COL[c]+'"></i>'});
     return'<div class="m'+(S.fm===m?" on":"")+'" role="button" tabindex="0" data-m="'+m+'"><em>'+gbp0.format(tot)+'</em><div class="stack">'+segs+"</div>"+mlabel(m)+"</div>"}).join("");
 
-  monthly(mon,ms,cl,sp);
+  monthly(mon,ms,cl,sp);budgets(sp,ms);
   $("merch").innerHTML=Object.keys(mer).sort(function(a,b){return mer[b].s-mer[a].s}).slice(0,8).map(function(k){return'<div class="merch"><span>'+esc(title(k))+" <small>"+mer[k].n+"×</small></span><strong>"+gbp.format(mer[k].s)+"</strong></div>"}).join("")||'<p class="note">None.</p>';
   var cr=T.filter(function(t){return t.cat===PAY}),crT=cr.reduce(function(a,t){return a+Math.abs(t.amt)},0);
   $("credits").innerHTML='<div class="big" style="font-size:32px" class="cr">'+gbp0.format(crT)+'</div><p class="note">'+cr.length+" payments, refunds and credits. These aren’t counted as spending.</p>";
@@ -439,6 +459,7 @@ async function loadHistory(){
     all=all.concat(r.data);if(r.data.length<step)break;from+=step}
   var rl=await sb.from("category_rules").select("key,category");
   S.over={};(rl.data||[]).forEach(function(x){S.over[x.key]=x.category});
+  await loadBudgets();
   loadUploads();
   if(!all.length){$("out").hidden=true;$("fname").textContent="No saved transactions yet. Upload your first CSV above.";return}
   S.raw=all.map(function(x){var p=x.txn_date.split("-");return{date:new Date(+p[0],p[1]-1,+p[2]),desc:x.description,amt:Number(x.amount)}});
@@ -471,6 +492,75 @@ $("save").onclick=async function(){
 
 document.addEventListener("change",function(e){var d=e.target.dataset;
   if(USER&&d&&d.key!==undefined){sb.from("category_rules").upsert({key:d.key,category:e.target.value},{onConflict:"user_id,key"}).then(function(r){if(r.error)$("err").textContent="Could not save that category: "+r.error.message})}});
+
+/* ---------- Budget groups ---------- */
+var G={groups:[],map:{}},E=null,BU={sp:[],ms:[]};
+function defaultGroups(){G.groups=[{id:"d1",name:"Fun money",budget:0,catch_all:false},{id:"d2",name:"Groceries",budget:0,catch_all:false},{id:"d3",name:"Bills",budget:0,catch_all:true}];
+  G.map={"Eating out":"d1","Shopping":"d1","Entertainment":"d1","Groceries":"d2"}}
+async function loadBudgets(){
+  var g=await sb.from("budget_groups").select("id,name,budget,catch_all,position").order("position"),m=await sb.from("group_categories").select("category,group_id");
+  if(g.error||!g.data.length){defaultGroups();return}
+  G.groups=g.data.map(function(x){return{id:x.id,name:x.name,budget:Number(x.budget),catch_all:x.catch_all}});
+  G.map={};(m.data||[]).forEach(function(x){G.map[x.category]=x.group_id})}
+function groupOf(c){var id=G.map[c];return G.groups.find(function(x){return x.id===id})||G.groups.find(function(x){return x.catch_all})||G.groups[0]}
+function bcats(){return CATS.filter(function(c){return c!==PAY})}
+
+function budgets(sp,ms){
+  BU={sp:sp,ms:ms};if(!G.groups.length)defaultGroups();
+  if(!ms.length){$("bcards").innerHTML="";$("btab").innerHTML="";$("bm").innerHTML="";return}
+  var by={};sp.forEach(function(t){var k=mk(t.date),g=groupOf(t.cat).id;by[k]=by[k]||{};by[k][g]=(by[k][g]||0)+t.amt});
+  if(!S.bm||ms.indexOf(S.bm)<0)S.bm=ms[ms.length-1];
+  $("bm").innerHTML=ms.slice().reverse().map(function(m){return'<option value="'+m+'"'+(m===S.bm?" selected":"")+">"+mlabel(m)+"</option>"}).join("");
+  var cur=by[S.bm]||{},tb=0,ts=0;
+  $("bcards").innerHTML=G.groups.map(function(g){var s=cur[g.id]||0,b=g.budget||0,p=b?s/b*100:0,cls=!b?"":p>100?"over":p>=85?"warn":"",st;
+    if(b){ts+=s;tb+=b}
+    st=!b?"No budget set":s>b?'<span class="up">'+gbp0.format(s-b)+" over budget</span>":gbp0.format(b-s)+" left";
+    return'<div class="bgrp"><div class="bhead"><b>'+esc(g.name)+"</b><span>"+gbp0.format(s)+(b?" of "+gbp0.format(b):"")+'</span></div><div class="bbar '+cls+'"><i style="width:'+Math.min(p,100)+'%"></i></div><div class="note">'+st+"</div></div>"}).join("")
+  +(tb?'<div class="bgrp"><div class="bhead"><b>All budgeted groups</b><span>'+gbp0.format(ts)+" of "+gbp0.format(tb)+'</span></div><div class="note">'+(ts>tb?'<span class="up">'+gbp0.format(ts-tb)+" over budget overall</span>":gbp0.format(tb-ts)+" left overall")+"</div></div>":"");
+  $("btab").innerHTML='<thead><tr><th>Group</th><th class="n">Budget</th>'+ms.map(function(m){return'<th class="n">'+mlabel(m)+"</th>"}).join("")+"</tr></thead><tbody>"+
+    G.groups.map(function(g){return"<tr><td>"+esc(g.name)+'</td><td class="n">'+(g.budget?gbp0.format(g.budget):"–")+"</td>"+ms.map(function(m){var s=(by[m]||{})[g.id]||0,o=g.budget&&s>g.budget;return'<td class="n'+(o?" ovr up":"")+'">'+(s?gbp0.format(s):"–")+"</td>"}).join("")+"</tr>"}).join("")+"</tbody>"}
+
+function openEditor(){
+  E={groups:G.groups.map(function(g){return{name:g.name,budget:g.budget||0,catch_all:!!g.catch_all}}),map:{}};
+  bcats().forEach(function(c){var id=groupOf(c).id;E.map[c]=G.groups.findIndex(function(g){return g.id===id})});
+  drawEditor();$("bform").hidden=false}
+function drawEditor(){
+  var opts=function(sel){return E.groups.map(function(g,i){return'<option value="'+i+'"'+(i===sel?" selected":"")+">"+esc(g.name)+"</option>"}).join("")};
+  $("bform").innerHTML='<div class="tw"><table><thead><tr><th>Group</th><th class="n">Monthly budget (£)</th><th>Everything else</th><th></th></tr></thead><tbody>'+
+    E.groups.map(function(g,i){return'<tr><td><input data-e="name" data-i="'+i+'" maxlength="40" value="'+esc(g.name)+'" aria-label="Group name"></td><td class="n"><input data-e="budget" data-i="'+i+'" type="number" min="0" step="1" value="'+(g.budget||"")+'" aria-label="Monthly budget"></td><td><input type="radio" name="ca" data-e="ca" data-i="'+i+'"'+(g.catch_all?" checked":"")+' aria-label="Catch-all group"></td><td>'+(E.groups.length>1?'<button class="btn ghost" type="button" data-e="del" data-i="'+i+'">Remove</button>':"")+"</td></tr>"}).join("")+
+    '</tbody></table></div><div class="bar"><button class="btn ghost" id="badd" type="button">Add group</button><span class="note">The “everything else” group collects any category you don’t place yourself.</span></div><h3>Put each category in a group</h3><div class="bcats">'+
+    bcats().map(function(c){return"<label>"+esc(c)+'<select data-e="cat" data-c="'+esc(c)+'">'+opts(E.map[c])+"</select></label>"}).join("")+
+    '</div><div class="bar"><button class="btn" id="bsave" type="button">Save</button><button class="btn ghost" id="bcancel" type="button">Cancel</button><span class="note" id="bmsg"></span></div>'}
+
+$("bedit").onclick=function(){if($("bform").hidden)openEditor();else $("bform").hidden=true};
+$("bm").onchange=function(){S.bm=this.value;budgets(BU.sp,BU.ms)};
+$("bform").addEventListener("input",function(e){var d=e.target.dataset;if(d.e==="budget")E.groups[+d.i].budget=Math.max(0,+e.target.value||0)});
+$("bform").addEventListener("change",function(e){var d=e.target.dataset;
+  if(d.e==="name"){E.groups[+d.i].name=e.target.value;drawEditor()}
+  else if(d.e==="ca"){E.groups.forEach(function(g,i){g.catch_all=i===+d.i})}
+  else if(d.e==="cat"){E.map[d.c]=+e.target.value}});
+$("bform").addEventListener("click",function(e){var t=e.target.closest("button");if(!t)return;var d=t.dataset;
+  if(d.e==="del"){var i=+d.i;E.groups.splice(i,1);Object.keys(E.map).forEach(function(c){if(E.map[c]===i)E.map[c]=0;else if(E.map[c]>i)E.map[c]--});
+    if(!E.groups.some(function(g){return g.catch_all}))E.groups[0].catch_all=true;drawEditor()}
+  else if(t.id==="badd"){E.groups.push({name:"New group",budget:0,catch_all:false});drawEditor()}
+  else if(t.id==="bcancel"){$("bform").hidden=true}
+  else if(t.id==="bsave"){saveBudgets()}});
+
+async function saveBudgets(){
+  var m=$("bmsg");m.textContent="Saving...";$("bsave").disabled=true;
+  try{
+    var gs=E.groups.map(function(g,i){return{name:(g.name||"").trim()||"Group "+(i+1),budget:Math.max(0,+g.budget||0),catch_all:!!g.catch_all,position:i}});
+    if(!gs.some(function(g){return g.catch_all}))gs[0].catch_all=true;
+    var del=await sb.from("budget_groups").delete().not("id","is",null);if(del.error)throw del.error;
+    var ins=await sb.from("budget_groups").insert(gs).select("id,name,budget,catch_all,position");if(ins.error)throw ins.error;
+    var rows=ins.data.slice().sort(function(a,b){return a.position-b.position}),maps=bcats().map(function(c){return{category:c,group_id:rows[E.map[c]].id}});
+    var mi=await sb.from("group_categories").insert(maps);if(mi.error)throw mi.error;
+    G.groups=rows.map(function(x){return{id:x.id,name:x.name,budget:Number(x.budget),catch_all:x.catch_all}});
+    G.map={};maps.forEach(function(x){G.map[x.category]=x.group_id});
+    $("bform").hidden=true;budgets(BU.sp,BU.ms)
+  }catch(e){m.textContent="Could not save: "+(e.message||e);var b=$("bsave");if(b)b.disabled=false}}
+
+var m0=$("months").closest("section");m0.parentNode.insertBefore($("budsec"),m0);
 </script>
 </body>
 </html>
