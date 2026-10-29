@@ -162,6 +162,45 @@ select{padding:8px 16px;min-height:36px}
 #bform input:not([type=radio]){background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-height:40px;font:inherit;width:100%;max-width:220px}
 .bcats{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px 24px;margin-bottom:20px}
 .bcats label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+/* Apple-style type scale and spacing: 17px body, 8pt grid, 44px tap targets */
+:root{--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Roboto,Arial,sans-serif}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-family:inherit}
+input,select,textarea{font-size:16px}
+h1{font-size:34px;line-height:1.12;font-weight:700;letter-spacing:-.03em;margin:0 0 8px}
+h2{font-size:28px;line-height:1.14;font-weight:600;letter-spacing:-.026em;margin:0 0 24px}
+h3{font-size:22px;line-height:1.18;font-weight:600;letter-spacing:-.022em;margin:40px 0 16px}
+p{margin:0 0 16px}
+.sub{font-size:17px;line-height:1.47;max-width:680px;margin:0 0 40px}
+.note{font-size:15px;line-height:1.4;letter-spacing:-.016em}
+td small.note,.note small{font-size:13px}
+.big{font-size:clamp(44px,7vw,56px);line-height:1.05;font-weight:700;letter-spacing:-.03em}
+.stats strong,.ins strong{font-size:28px;line-height:1.14;font-weight:600;letter-spacing:-.026em}
+.stats span,.ins div{font-size:13px;line-height:1.38;letter-spacing:-.006em}
+th{font-size:13px;line-height:1.38;font-weight:600;letter-spacing:-.006em;padding:12px 16px}
+td{font-size:15px;line-height:1.4;letter-spacing:-.016em;padding:14px 16px}
+table select{font-size:15px}
+.btn{font-size:17px;line-height:1.2;font-weight:500;min-height:44px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-top:16px}
+#fname{display:block;margin:16px 0 0;min-height:22px}
+#savebar{margin:24px 0 32px;gap:12px 16px}
+#smsg{flex:1 1 280px}
+#out{margin-top:16px}
+.drop b{display:block;font-size:20px;line-height:1.2;font-weight:600;margin-bottom:8px}
+.drop span{font-size:15px;line-height:1.4}
+.bhead{font-size:17px;line-height:1.3;margin-bottom:12px}
+.bgrp .note{margin-top:8px}
+.authcard label{font-size:15px;line-height:1.4}
+@media(max-width:720px){h1{font-size:28px}h2{font-size:24px}h3{font-size:20px}.stats strong,.ins strong{font-size:24px}}
+/* layout: full width, slim upload strip, statements first */
+[hidden]{display:none!important}
+main{max-width:none;padding:40px clamp(16px,4vw,64px) 112px}
+.drop{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;width:100%;min-height:56px;padding:12px 20px;text-align:left;border-radius:12px}
+.drop b{display:inline;margin:0;font-size:17px}
+.drop span{font-size:15px;color:var(--muted)}
+#savebar{position:sticky;top:0;z-index:5;margin:16px 0 24px;padding:12px 0;background:var(--bg);border-bottom:1px solid var(--line)}
+#upsec{border-top:0;padding:24px 0 8px}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -174,8 +213,8 @@ select{padding:8px 16px;min-height:36px}
 <p class="sub">Upload the CSV from your Amex account each month. Your transactions are saved to your private account, so your history and month-by-month analysis build up over time.</p>
 
 <label class="drop" id="drop">
-  <b>Choose your statement CSV</b>
-  <span>or drag it here. In Amex online: Statements &amp; Activity, then Download, then CSV.</span>
+  <b>Upload a statement</b>
+  <span>Choose or drop this month’s Amex CSV here.</span>
   <input type="file" id="file" accept=".csv,.txt,text/csv">
 </label>
 <div class="bar"><button class="btn ghost" id="sample" type="button">Try with sample data</button><span id="fname" class="note"></span></div>
@@ -227,7 +266,7 @@ select{padding:8px 16px;min-height:36px}
 <div class="tw"><table id="btab"></table></div>
 <p class="note">Groups only change how spending is added up for budgets. Your categories and charts above stay exactly as they are. The first and last months in your data may be partial.</p></section>
 </div>
-<section class="panel" id="upsec" hidden><h2>Upload history</h2><div class="tw"><table><thead><tr><th>Uploaded</th><th>File</th><th>Period</th><th class="n">Rows in file</th><th class="n">New rows saved</th></tr></thead><tbody id="uprows"></tbody></table></div></section>
+<section class="panel" id="upsec" hidden><h2>Your statements</h2><div class="tw"><table><thead><tr><th>Uploaded</th><th>File</th><th>Period</th><th class="n">Rows in file</th><th class="n">New rows saved</th></tr></thead><tbody id="uprows"></tbody></table></div></section>
 </main>
 
 <script>
@@ -301,7 +340,7 @@ function load(text,name){
   if(!raw.length){$("err").textContent="No transactions found in that file.";return}
   S.raw=raw;S.flip=neg>pos;S.fc=null;S.fm=null;S.q="";S.all=false;
   $("flip").checked=false;$("q").value="";$("fname").textContent=name||"";
-  S.preview=true;S.file=name||"upload.csv";$("savebar").hidden=false;$("smsg").textContent="Preview only. Check it looks right (tick the flip box if charges show as negative), then save.";$("out").hidden=false;render();$("out").scrollIntoView({behavior:"smooth"})}
+  S.preview=true;S.file=name||"upload.csv";$("savebar").hidden=false;$("smsg").textContent="Preview only. Check it looks right (tick the flip box if charges show as negative), then save.";$("out").hidden=false;render();$("savebar").scrollIntoView({behavior:"smooth",block:"nearest"})}
 
 function keyOf(d){return d.toUpperCase().replace(/[0-9#*\/]+/g," ").replace(/\s+/g," ").trim().split(" ").slice(0,2).join(" ")}
 function derive(){
@@ -558,6 +597,8 @@ async function saveBudgets(){
     $("bform").hidden=true;budgets(BU.sp,BU.ms)
   }catch(e){m.textContent="Could not save: "+(e.message||e);var b=$("bsave");if(b)b.disabled=false}}
 
+$("out").parentNode.insertBefore($("upsec"),$("out"));
+window.addEventListener("beforeunload",function(e){if(S.preview){e.preventDefault();e.returnValue=""}});
 var m0=$("months").closest("section");m0.parentNode.insertBefore($("budsec"),m0);
 </script>
 </body>
