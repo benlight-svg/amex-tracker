@@ -211,12 +211,10 @@ main{max-width:none;padding:40px clamp(16px,4vw,64px) 112px}
 .ring .tr{stroke:#e8eaed}.ring .pr{stroke:#3b78e7}
 :root[data-theme="dark"] .ring .tr{stroke:#3c4043}
 :root[data-theme="dark"] .ring .pr{stroke:#8ab4f8}
-.bcard.warn .pr{stroke:#f9ab00!important}.bcard.over .pr{stroke:#d93025!important}
-:root[data-theme="dark"] .bcard.over .pr{stroke:#f28b82!important}
 .ringtxt{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
 .ringtxt b{font-size:44px;line-height:1;font-weight:400;letter-spacing:-.02em}
 .ringtxt b small{font-size:24px;font-weight:400}
-.ringtxt span{margin-top:8px;font-size:20px;line-height:1.1;font-weight:500}
+.ringtxt span{margin-top:8px;font-size:11pt;line-height:1.2;font-weight:600}
 .bcard .cap{margin-top:20px;font-size:15px;line-height:1.4;color:var(--muted);text-align:center}
 /* font, top spacing, single divider, flexible tile rows */
 :root{--sans:"open-sans",-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Roboto,Arial,sans-serif}
@@ -261,10 +259,6 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 .bcard[data-c="red"]{--used:#CA4C40;--track:#EFCDC9}
 .bcard[data-c="yellow"]{--used:#E9B847;--track:#F9EFC1}
 .bcard[data-c="green"]{--used:#5B9C53;--track:#CEE4D0}
-:root[data-theme="dark"] .bcard{--used:#8AB4F8;--track:color-mix(in srgb,#8AB4F8 24%,transparent)}
-:root[data-theme="dark"] .bcard[data-c="red"]{--used:#F28B82;--track:color-mix(in srgb,#F28B82 24%,transparent)}
-:root[data-theme="dark"] .bcard[data-c="yellow"]{--used:#FDD663;--track:color-mix(in srgb,#FDD663 24%,transparent)}
-:root[data-theme="dark"] .bcard[data-c="green"]{--used:#81C995;--track:color-mix(in srgb,#81C995 24%,transparent)}
 :root .bcard .ring .tr{stroke:var(--track)}
 :root .bcard .ring .pr{stroke:var(--used)}
 .sw{display:flex;gap:4px}
@@ -309,6 +303,15 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 .cbtns{display:flex;flex-wrap:wrap;gap:12px}
 .cbtns .sp{flex:1}
 @media(max-width:600px){.crow{grid-template-columns:minmax(0,1fr) 104px 40px}.chead,#calcbody,.cfoot{padding-left:16px;padding-right:16px}}
+/* unusual spending + subscriptions */
+.flag{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:999px;font-size:12px;line-height:18px;font-weight:600;background:color-mix(in srgb,currentColor 18%,transparent)}
+.unusual{margin-top:24px;padding:16px 20px;border:1px solid var(--line);border-left:4px solid #F9AB00;border-radius:12px;background:var(--soft)}
+.unusual h3{margin:0 0 8px;font-size:16px;line-height:1.3}
+.urow{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:6px 0;font-size:15px}
+.urow span:last-child{font-weight:600}
+.pill{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;line-height:20px;font-weight:600;background:var(--soft);color:var(--muted);white-space:nowrap}
+.pill.warn{background:color-mix(in srgb,#F9AB00 22%,transparent);color:var(--ink)}
+.pill.dim{opacity:.8}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -343,6 +346,7 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
   <section class="panel">
     <h2>Spending by category</h2>
     <div class="grid"><div id="donut"></div><div id="cats"></div></div>
+    <div class="unusual" id="unusual" hidden></div>
     <p class="note">Select a category to filter the transactions below. Wrong category? Change it in the table and every transaction from that merchant updates.</p>
   </section>
 
@@ -361,6 +365,13 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
     <div><h2>Biggest merchants</h2><div id="merch"></div></div>
     <div><h2>Payments and credits</h2><div id="credits"></div>
       <label class="note" style="display:block;margin-top:14px"><input type="checkbox" id="flip"> Charges show as negative in my file (flip signs)</label></div>
+  </section>
+
+  <section class="panel" id="subsec">
+    <h2><span id="subh">Subscriptions and regular payments</span></h2>
+    <div class="ins" id="subsum"></div>
+    <div class="tw"><table><thead><tr><th>Payment</th><th>Category</th><th class="n">Monthly</th><th class="n">Per year</th><th>Last charged</th><th>Next due</th><th>Notes</th></tr></thead><tbody id="subt"></tbody></table></div>
+    <p class="note" id="subnote"></p>
   </section>
 
   <section class="panel" id="txsec">
@@ -496,13 +507,15 @@ function render(){
   var R=70,C=2*Math.PI*R,acc=0,seg="";
   cl.forEach(function(c){var s=by[c]/total*C;seg+='<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+COL[c]+'" stroke-width="30" stroke-dasharray="'+Math.max(s-1.5,0.5)+" "+(C-Math.max(s-1.5,0.5))+'" stroke-dashoffset="'+(-acc)+'" transform="rotate(-90 100 100)"><title>'+esc(c)+" "+gbp0.format(by[c])+"</title></circle>";acc+=s});
   $("donut").innerHTML='<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="Spending by category">'+(seg||"")+'<text x="100" y="97" text-anchor="middle" font-size="12" fill="var(--muted)">Total</text><text x="100" y="118" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">'+gbp0.format(total)+"</text></svg>";
-  $("cats").innerHTML=cl.map(function(c){return'<div class="tile'+(S.fc===c?" on":"")+'" style="background:'+COL[c]+";color:"+ink(COL[c])+'" role="button" tabindex="0" data-cat="'+esc(c)+'"><span>'+esc(c)+"</span><span><strong>"+gbp0.format(by[c])+"</strong><br><small>"+(by[c]/total*100).toFixed(1)+"% of spend</small></span></div>"}).join("")||'<p class="note">No spending found.</p>';
+  U=unusual(mon,ms,cl);
+  $("cats").innerHTML=cl.map(function(c){return'<div class="tile'+(S.fc===c?" on":"")+'" style="background:'+COL[c]+";color:"+ink(COL[c])+'" role="button" tabindex="0" data-cat="'+esc(c)+'"><span>'+esc(c)+"</span><span><strong>"+gbp0.format(by[c])+"</strong><br><small>"+(by[c]/total*100).toFixed(1)+"% of spend</small>"+uflag(c)+"</span></div>"}).join("")||'<p class="note">No spending found.</p>';
 
   var mx=Math.max.apply(null,ms.map(function(m){return Object.keys(mon[m]).reduce(function(a,c){return a+mon[m][c]},0)}).concat([1]));
   $("months").innerHTML=ms.map(function(m){var tot=0,segs="";
     cl.forEach(function(c){var v=mon[m][c]||0;tot+=v;if(v)segs+='<i title="'+esc(c)+" "+gbp0.format(v)+'" style="height:'+(v/mx*130)+"px;background:"+COL[c]+'"></i>'});
     return'<div class="m'+(S.fm===m?" on":"")+'" role="button" tabindex="0" data-m="'+m+'"><em>'+gbp0.format(tot)+'</em><div class="stack">'+segs+"</div>"+mlabel(m)+"</div>"}).join("");
 
+  unusualBox(ms);subsView();
   monthly(mon,ms,cl,sp);budgets(sp,ms);
   $("merch").innerHTML=Object.keys(mer).sort(function(a,b){return mer[b].s-mer[a].s}).slice(0,8).map(function(k){return'<div class="merch"><span>'+esc(title(k))+" <small>"+mer[k].n+"×</small></span><strong>"+gbp.format(mer[k].s)+"</strong></div>"}).join("")||'<p class="note">None.</p>';
   var cr=T.filter(function(t){return t.cat===PAY}),crT=cr.reduce(function(a,t){return a+Math.abs(t.amt)},0);
@@ -656,6 +669,55 @@ $("save").onclick=async function(){
 document.addEventListener("change",function(e){var d=e.target.dataset;
   if(USER&&d&&d.key!==undefined){sb.from("category_rules").upsert({key:d.key,category:e.target.value},{onConflict:"user_id,key"}).then(function(r){if(r.error)$("err").textContent="Could not save that category: "+r.error.message})}});
 
+
+/* ---------- Unusual spending ---------- */
+var U={};
+function unusual(mon,ms,cl){var r={};if(ms.length<3)return r;
+  var cur=ms[ms.length-1],base=ms.slice(0,-1);if(base.length>=4)base=base.slice(1);
+  cl.forEach(function(c){var v=(mon[cur]||{})[c]||0;if(!v)return;
+    var avg=base.reduce(function(a,m){return a+((mon[m]||{})[c]||0)},0)/base.length;
+    if(avg>0&&v>=avg*1.5&&v-avg>=25)r[c]={v:v,avg:avg,pct:Math.round((v/avg-1)*100)};
+    else if(avg===0&&base.length>=3&&v>=50)r[c]={v:v,avg:0,pct:null}});
+  return r}
+function uflag(c){var u=U[c];if(!u)return"";
+  var tip=gbp0.format(u.v)+" this period"+(u.avg?" against a usual "+gbp0.format(u.avg):", with nothing like it before");
+  return'<br><span class="flag" title="'+esc(tip)+'">'+(u.pct==null?"New this period":"▲ "+u.pct+"% above usual")+"</span>"}
+function unusualBox(ms){var el=$("unusual"),k=Object.keys(U);
+  if(!k.length){el.hidden=true;el.innerHTML="";return}
+  k.sort(function(a,b){return(U[b].v-U[b].avg)-(U[a].v-U[a].avg)});
+  el.innerHTML="<h3>Higher than usual in "+esc(mlabel(ms[ms.length-1]))+"</h3>"+k.map(function(c){var u=U[c];
+    return'<div class="urow"><span>'+esc(c)+"</span><span>"+gbp0.format(u.v)+(u.avg?" against a usual "+gbp0.format(u.avg):" and nothing like it before")+"</span></div>"}).join("")+
+    '<p class="note" style="margin:8px 0 0">Compared with your earlier periods. The latest period may be only part of a month, so a flag here means it is already high.</p>';
+  el.hidden=false}
+
+/* ---------- Subscriptions and regular payments ---------- */
+function findSubs(list,spend,monthKey,nice){
+  var g={},lastAll=0;list.forEach(function(t){if(+t.date>lastAll)lastAll=+t.date});
+  list.filter(spend).forEach(function(t){var k=t.key||t.desc;(g[k]=g[k]||[]).push(t)});
+  var out=[];
+  Object.keys(g).forEach(function(k){
+    var a=g[k].slice().sort(function(x,y){return x.date-y.date});if(a.length<2)return;
+    var seen={},dup=false;a.forEach(function(t){var m=monthKey(t.date);if(seen[m])dup=true;seen[m]=1});if(dup)return;
+    for(var i=1;i<a.length;i++){var gap=(a[i].date-a[i-1].date)/864e5;if(gap<24||gap>38)return}
+    var am=a.map(function(t){return t.amt}).sort(function(x,y){return x-y}),med=am[Math.floor(am.length/2)];
+    if(am.some(function(x){return Math.abs(x-med)>Math.max(2,med*.2)}))return;
+    var L=a[a.length-1],P=a[a.length-2],cats={},best="",bn=0;
+    a.forEach(function(t){cats[t.cat]=(cats[t.cat]||0)+1;if(cats[t.cat]>bn){bn=cats[t.cat];best=t.cat}});
+    var nx=new Date(L.date.getFullYear(),L.date.getMonth()+1,L.date.getDate()),stale=(lastAll-L.date)/864e5>45;
+    out.push({name:nice(k),cat:best,amt:L.amt,n:a.length,last:L.date,next:nx,prev:Math.abs(L.amt-P.amt)>=.01&&Math.abs(L.amt-P.amt)/P.amt>.01?P.amt:null,stale:stale})});
+  out.sort(function(x,y){return(x.stale-y.stale)||(y.amt-x.amt)});return out}
+function subsView(){
+  var L=findSubs(T,isSpend,mk,title),act=L.filter(function(x){return!x.stale}),mo=act.reduce(function(a,x){return a+x.amt},0),
+    d=function(x){return x.toLocaleDateString("en-GB",{day:"numeric",month:"short"})};
+  $("subh").textContent=act.length?"Subscriptions and regular payments · "+act.length+" found · "+gbp0.format(mo)+" a month":"Subscriptions and regular payments";
+  $("subsum").innerHTML=act.length?[["Found",act.length],["Each month",gbp0.format(mo)],["Each year",gbp0.format(mo*12)]].map(function(x){return"<div>"+x[0]+"<strong>"+esc(x[1])+"</strong></div>"}).join(""):"";
+  $("subt").innerHTML=L.map(function(x){var notes=[];
+    if(x.stale)notes.push('<span class="pill dim">Not charged since '+d(x.last)+"</span>");
+    if(x.prev!=null)notes.push('<span class="pill warn">'+(x.amt>x.prev?"Price up":"Price down")+" from "+gbp.format(x.prev)+"</span>");
+    if(x.n===2)notes.push('<span class="pill">Only 2 charges so far</span>');
+    return"<tr"+(x.stale?' style="opacity:.6"':"")+"><td>"+esc(x.name)+" <small class=\"note\">"+x.n+"×</small></td><td>"+esc(x.cat)+'</td><td class="n">'+gbp.format(x.amt)+'</td><td class="n">'+gbp0.format(x.amt*12)+"</td><td class=\"d\">"+d(x.last)+'</td><td class="d">'+(x.stale?"–":d(x.next))+"</td><td>"+notes.join(" ")+"</td></tr>"}).join("")||'<tr><td colspan="7" class="note">No regular monthly payments found yet. Upload at least two months of statements.</td></tr>';
+  $("subnote").textContent=L.length?"Found by looking for the same merchant charged about once a month for a similar amount. Counted in the totals: payments charged in the last 45 days of your data.":""}
+
 /* ---------- Budget groups ---------- */
 var G={groups:[],map:{}},E=null,BU={sp:[],ms:[]},HASCOL=true;
 var PAL={blue:["Blue","#5A6FAF","#D2DDF0"],red:["Red","#CA4C40","#EFCDC9"],yellow:["Yellow","#E9B847","#F9EFC1"],green:["Green","#5B9C53","#CEE4D0"]};
@@ -756,11 +818,11 @@ function paintUnit(u){u.body.hidden=u.closed;u.btn.setAttribute("aria-expanded",
   $("colall").textContent=UNITS.some(function(x){return!x.closed})?"Collapse all":"Expand all"}
 function setUnit(u,closed){u.closed=closed;COLL[u.key]=closed;try{localStorage.setItem("collapsed2",JSON.stringify(COLL))}catch(e){}paintUnit(u)}
 (function(){var chev='<svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>';
-  document.querySelectorAll("#upsec h2,#out h2,#budsec h2").forEach(function(h,i){
+  var ki=0;document.querySelectorAll("#upsec h2,#out h2,#budsec h2").forEach(function(h,i){
     var hd=h.parentNode.classList.contains("top")?h.parentNode:h,host=hd.parentNode,body=document.createElement("div"),btn=document.createElement("button");
     body.className="cbody";body.id="cbody"+i;while(hd.nextSibling)body.appendChild(hd.nextSibling);host.appendChild(body);
     btn.type="button";btn.className="ctog";btn.setAttribute("aria-controls",body.id);while(h.firstChild)btn.appendChild(h.firstChild);btn.insertAdjacentHTML("beforeend",chev);h.appendChild(btn);
-    var panel=host.closest(".panel"),u={key:"s"+i,hd:hd,h:h,btn:btn,body:body,panel:panel,closed:COLL["s"+i]===undefined?OPEN0.indexOf(h.textContent.trim())<0:!!COLL["s"+i]};UNITS.push(u);
+    var panel=host.closest(".panel"),key=h.closest("#subsec")?"sub":"s"+(ki++),u={hd:hd,h:h,btn:btn,body:body,panel:panel,key:key,closed:COLL[key]===undefined?OPEN0.indexOf(h.textContent.trim())<0:!!COLL[key]};UNITS.push(u);
     btn.onclick=function(){setUnit(u,!u.closed)}});
   UNITS.forEach(paintUnit)})();
 $("colall").onclick=function(){var close=UNITS.some(function(x){return!x.closed});UNITS.forEach(function(u){u.closed=close;COLL[u.key]=close});try{localStorage.setItem("collapsed2",JSON.stringify(COLL))}catch(e){}UNITS.forEach(paintUnit)};
