@@ -240,8 +240,9 @@ main{padding-top:clamp(56px,10vh,112px)}
 /* Google-style buttons: 40px tall, 14px, semi bold, pill; icon 18px */
 .btn{font-size:14px;line-height:20px;font-weight:600;letter-spacing:0;height:40px;min-height:40px;padding:0 24px;border-radius:999px;gap:8px}
 #upbtn{padding:0 24px 0 16px}
-#upbtn svg,#upbtn i{width:18px;height:18px;margin:0}
-@media(max-width:600px){#upbtn{width:40px;padding:0}}
+#upbtn svg,#upbtn i,#calcbtn svg,#calcbtn i{height:18px;width:auto;margin:0}
+#calcbtn{padding:0 24px 0 16px}
+@media(max-width:600px){#upbtn,#calcbtn{width:40px;padding:0}#calcbtn span{display:none}}
 .viewbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:0 0 24px}
 .viewbar .seg{margin:0}
 #seg[hidden]~#colall{display:none!important}
@@ -269,9 +270,46 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 .sw{display:flex;gap:4px}
 .sw label{position:relative;width:40px;height:40px;display:grid;place-items:center;cursor:pointer}
 .sw input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
-.sw i{display:block;width:28px;height:28px;border-radius:50%;background:conic-gradient(var(--m) 0 70%,var(--l) 0 100%);-webkit-mask:radial-gradient(circle,transparent 8px,#000 9px);mask:radial-gradient(circle,transparent 8px,#000 9px)}
+.sw i{position:relative;display:block;width:28px;height:28px;border-radius:50%;background:var(--m);transition:transform .15s}
+.sw label:hover i{transform:scale(1.08)}
 .sw input:checked+i{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
+.sw input:checked+i::after{content:"";position:absolute;left:10px;top:5px;width:6px;height:12px;border:solid var(--k);border-width:0 3px 3px 0;transform:rotate(45deg)}
 .sw input:focus-visible+i{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+/* budget calculator dialog */
+#calc{width:min(760px,calc(100% - 32px));max-height:min(90vh,900px);padding:0;border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+#calc[open]{display:flex;flex-direction:column}
+#calc::backdrop{background:rgba(32,33,36,.6)}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px 8px}
+.chead h2{margin:0;font-size:24px}
+#calcbody{flex:1 1 auto;overflow:auto;padding:0 24px 8px}
+.cintro{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.4}
+.cblock{margin:0 0 24px}
+.cblock h3{margin:16px 0 12px;font-size:18px;line-height:1.3}
+.cblock h3 small{font-size:14px;font-weight:400;color:var(--muted);margin-left:8px}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) 128px 40px;gap:8px;align-items:center;margin-bottom:8px}
+#calc input[type=text]{width:100%;min-height:40px;padding:8px 12px;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px}
+#calc input.ca{text-align:right}
+#calc input.bad{border-color:#d93025}
+.cx{width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.cx:hover{background:var(--soft);color:var(--ink)}
+.cx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.csec{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.cshead{display:grid;grid-template-columns:minmax(0,1fr) auto 40px;gap:8px;align-items:center;margin-bottom:12px}
+#calc input.cst{font-weight:600}
+.ctot{font-weight:600;min-width:84px;text-align:right}
+.csfoot{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;margin-top:8px}
+.ctrack{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);cursor:pointer}
+.btn.sm{height:32px;min-height:32px;padding:0 16px}
+.cfoot{border-top:1px solid var(--line);padding:16px 24px 20px}
+#csum{display:flex;flex-wrap:wrap;gap:8px 28px;margin-bottom:12px}
+#csum div{font-size:13px;color:var(--muted)}
+#csum strong{display:block;font-size:20px;line-height:1.3;font-weight:600;color:var(--ink)}
+#csum strong.neg{color:#d93025}
+:root[data-theme="dark"] #csum strong.neg{color:#f28b82}
+#cmsg{margin:0 0 12px;min-height:0}
+.cbtns{display:flex;flex-wrap:wrap;gap:12px}
+.cbtns .sp{flex:1}
+@media(max-width:600px){.crow{grid-template-columns:minmax(0,1fr) 104px 40px}.chead,#calcbody,.cfoot{padding-left:16px;padding-right:16px}}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -282,7 +320,7 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 <body>
 <div id="auth"><form id="authform" class="authcard"><h1>Amex spending analyser</h1><p class="note">Sign in to see your saved history.</p><label>Email<input id="em" type="email" autocomplete="username" required></label><label>Password<input id="pw" type="password" autocomplete="current-password" minlength="12" required></label><div class="err" id="amsg" role="alert"></div><button class="btn" type="submit">Sign in</button><button class="btn ghost" id="signup" type="button">Create account</button></form></div>
 <main hidden>
-<div class="top"><h1>Amex spending analyser</h1><div class="who"><button class="btn" id="upbtn" type="button" aria-label="Upload statement"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i><span>Upload statement</span></button><button class="btn ghost" id="signout" type="button">Sign out</button><button class="icon" id="theme" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><svg class="ic-moon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg><svg class="ic-sun" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg></button></div></div>
+<div class="top"><h1>Amex spending analyser</h1><div class="who"><button class="btn" id="upbtn" type="button" aria-label="Upload statement"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i><span>Upload statement</span></button><button class="btn ghost" id="calcbtn" type="button" aria-label="Calculate budget"><i class="fa-solid fa-calculator" aria-hidden="true"></i><span>Calculate budget</span></button><button class="btn ghost" id="signout" type="button">Sign out</button><button class="icon" id="theme" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><svg class="ic-moon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg><svg class="ic-sun" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg></button></div></div>
 <p class="sub">Upload the CSV from your Amex account each month. Your transactions are saved to your private account, so your history and month-by-month analysis build up over time.</p>
 
 <label class="drop" id="drop">
@@ -342,6 +380,13 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 </div>
 <section class="panel" id="upsec" hidden><h2>Your statements</h2><div class="tw"><table><thead><tr><th>Uploaded</th><th>File</th><th>Period</th><th class="n">Rows in file</th><th class="n">New rows saved</th></tr></thead><tbody id="uprows"></tbody></table></div></section>
 </main>
+<dialog id="calc" aria-labelledby="calch">
+<div class="chead"><h2 id="calch">Calculate budget</h2><button class="cx" id="calcx" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
+<div id="calcbody"></div>
+<div class="cfoot"><div id="csum" aria-live="polite"></div><p class="note" id="cmsg" role="alert"></p>
+<div class="cbtns"><button class="btn ghost" id="cimpbtn" type="button">Import from Excel</button><input type="file" id="cimp" accept=".xlsx,.xls" hidden><span class="sp"></span><button class="btn ghost" id="ccancel" type="button">Cancel</button><button class="btn" id="capply" type="button">Apply to budgets</button></div>
+<p class="note">Applying replaces your current budget groups. Categories already placed in a group with the same name stay there.</p></div>
+</dialog>
 
 <script>
 var PAY="Payments & credits",OTHER="Other";
@@ -655,7 +700,7 @@ function openEditor(){
 function drawEditor(){
   var opts=function(sel){return E.groups.map(function(g,i){return'<option value="'+i+'"'+(i===sel?" selected":"")+">"+esc(g.name)+"</option>"}).join("")};
   $("bform").innerHTML='<div class="tw"><table><thead><tr><th>Group</th><th class="n">Monthly budget (£)</th><th>Colour</th><th>Everything else</th><th></th></tr></thead><tbody>'+
-    E.groups.map(function(g,i){return'<tr><td><input data-e="name" data-i="'+i+'" maxlength="40" value="'+esc(g.name)+'" aria-label="Group name"></td><td class="n"><input data-e="budget" data-i="'+i+'" type="number" min="0" step="1" value="'+(g.budget||"")+'" aria-label="Monthly budget"></td><td><div class="sw" role="radiogroup" aria-label="Colour for '+esc(g.name)+'">'+Object.keys(PAL).map(function(k){return'<label title="'+PAL[k][0]+'"><input type="radio" name="col'+i+'" data-e="color" data-i="'+i+'" value="'+k+'"'+((g.color||"blue")===k?" checked":"")+' aria-label="'+PAL[k][0]+'"><i style="--m:'+PAL[k][1]+';--l:'+PAL[k][2]+'"></i></label>'}).join("")+'</div></td><td><input type="radio" name="ca" data-e="ca" data-i="'+i+'"'+(g.catch_all?" checked":"")+' aria-label="Catch-all group"></td><td>'+(E.groups.length>1?'<button class="btn ghost" type="button" data-e="del" data-i="'+i+'">Remove</button>':"")+"</td></tr>"}).join("")+
+    E.groups.map(function(g,i){return'<tr><td><input data-e="name" data-i="'+i+'" maxlength="40" value="'+esc(g.name)+'" aria-label="Group name"></td><td class="n"><input data-e="budget" data-i="'+i+'" type="number" min="0" step="1" value="'+(g.budget||"")+'" aria-label="Monthly budget"></td><td><div class="sw" role="radiogroup" aria-label="Colour for '+esc(g.name)+'">'+Object.keys(PAL).map(function(k){return'<label title="'+PAL[k][0]+'"><input type="radio" name="col'+i+'" data-e="color" data-i="'+i+'" value="'+k+'"'+((g.color||"blue")===k?" checked":"")+' aria-label="'+PAL[k][0]+'"><i style="--m:'+PAL[k][1]+';--k:'+(k==="yellow"?"#202124":"#fff")+'"></i></label>'}).join("")+'</div></td><td><input type="radio" name="ca" data-e="ca" data-i="'+i+'"'+(g.catch_all?" checked":"")+' aria-label="Catch-all group"></td><td>'+(E.groups.length>1?'<button class="btn ghost" type="button" data-e="del" data-i="'+i+'">Remove</button>':"")+"</td></tr>"}).join("")+
     '</tbody></table></div><div class="bar"><button class="btn ghost" id="badd" type="button">Add group</button><span class="note">The “everything else” group collects any category you don’t place yourself.</span></div><h3>Put each category in a group</h3><div class="bcats">'+
     bcats().map(function(c){return"<label>"+esc(c)+'<select data-e="cat" data-c="'+esc(c)+'">'+opts(E.map[c])+"</select></label>"}).join("")+
     '</div><div class="bar"><button class="btn" id="bsave" type="button">Save</button><button class="btn ghost" id="bcancel" type="button">Cancel</button><span class="note" id="bmsg"></span></div>'}
@@ -721,6 +766,107 @@ function setUnit(u,closed){u.closed=closed;COLL[u.key]=closed;try{localStorage.s
   UNITS.forEach(paintUnit)})();
 $("colall").onclick=function(){var close=UNITS.some(function(x){return!x.closed});UNITS.forEach(function(u){u.closed=close;COLL[u.key]=close});try{localStorage.setItem("collapsed",JSON.stringify(COLL))}catch(e){}UNITS.forEach(paintUnit)};
 document.addEventListener("click",function(e){if(!e.target.closest("[data-cat],[data-m]"))return;UNITS.forEach(function(u){if(u.closed&&$("txsec").contains(u.btn))setUnit(u,false)})});
+
+/* ---------- Budget calculator ---------- */
+var PLAN=null,XICON='<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+function defaultPlan(){var mk=function(n,items){return{n:n,track:true,items:items.map(function(x){return{n:x,t:""}})}};
+  return{income:[{n:"Pay 1",t:""},{n:"Pay 2",t:""}],
+    sections:[mk("Household",["Mortgage or rent","Council tax","Home insurance","Gas","Electricity","Water"]),mk("TV & internet",["TV licence","Broadband","TV subscription"]),mk("Mobile",["Phone contract"]),mk("Subscriptions",["Subscription"]),mk("Gym memberships",["Gym membership"]),mk("Cars",["Petrol","Car insurance","Car tax","Car payment"]),mk("Personal care",["Haircuts"]),mk("Groceries",["Food"])],
+    aside:[{n:"Savings",t:""},{n:"Pocket money",t:""}]}}
+function calc(t){var x=String(t==null?"":t).replace(/[£,\s]/g,"").replace(/^=/,"");if(!x)return 0;if(!/^[0-9+\-*\/().]+$/.test(x))return NaN;
+  try{var v=Function('"use strict";return ('+x+')')();return typeof v==="number"&&isFinite(v)?v:NaN}catch(e){return NaN}}
+function n0(t){var v=calc(t);return isNaN(v)?0:v}
+function sumOf(a){return a.reduce(function(x,y){return x+y},0)}
+function totals(P){var inc=sumOf(P.income.map(function(x){return n0(x.t)})),sec=P.sections.map(function(s){return sumOf(s.items.map(function(x){return n0(x.t)}))}),costs=sumOf(sec),aside=sumOf(P.aside.map(function(x){return n0(x.t)}));
+  return{inc:inc,sec:sec,costs:costs,aside:aside,left:inc-costs,fun:inc-costs-aside}}
+function validPlan(p){return!!p&&Array.isArray(p.income)&&Array.isArray(p.sections)&&Array.isArray(p.aside)}
+function loadPlan(){var p=null;try{p=USER&&USER.user_metadata&&USER.user_metadata.budget_plan}catch(e){}
+  if(!validPlan(p)){try{p=JSON.parse(localStorage.getItem("budgetplan:"+(USER?USER.id:""))||"null")}catch(e){p=null}}
+  return validPlan(p)?JSON.parse(JSON.stringify(p)):defaultPlan()}
+function savePlan(P){try{localStorage.setItem("budgetplan:"+USER.id,JSON.stringify(P))}catch(e){}
+  sb.auth.updateUser({data:{budget_plan:P}}).then(function(r){if(r.error)$("cmsg").textContent="Saved on this device only: "+r.error.message}).catch(function(){})}
+
+function amtRow(kind,s,i,n,t,label){var d=' data-s="'+s+'" data-i="'+i+'"';
+  return'<div class="crow"><input type="text" class="cn" data-k="'+kind+'n"'+d+' value="'+esc(n)+'" maxlength="60" autocomplete="off" aria-label="'+label+' name"><input type="text" class="ca'+(isNaN(calc(t))?" bad":"")+'" inputmode="decimal" autocomplete="off" data-k="'+kind+'t"'+d+' value="'+esc(t)+'" placeholder="0.00" aria-label="'+esc(n||label)+' amount"><button type="button" class="cx" data-k="'+kind+'x"'+d+' aria-label="Remove '+esc(n||label)+'">'+XICON+"</button></div>"}
+function drawCalc(after){var P=PLAN,h='<p class="cintro">Key in your monthly figures. You can type sums like 90*4 or 180/12 and they’re worked out for you.</p>';
+  h+='<section class="cblock"><h3>Income each month<small>after tax</small></h3>'+P.income.map(function(x,i){return amtRow("inc",0,i,x.n,x.t,"Income")}).join("")+'<button class="btn ghost sm" type="button" data-k="incadd">Add income</button></section>';
+  h+='<section class="cblock"><h3>Monthly costs</h3>'+P.sections.map(function(s,si){
+    return'<div class="csec"><div class="cshead"><input type="text" class="cn cst" data-k="secn" data-s="'+si+'" value="'+esc(s.n)+'" maxlength="40" autocomplete="off" aria-label="Section name"><span class="ctot" data-tot="'+si+'"></span><button type="button" class="cx" data-k="secx" data-s="'+si+'" aria-label="Remove section '+esc(s.n)+'">'+XICON+"</button></div>"+
+      s.items.map(function(x,i){return amtRow("item",si,i,x.n,x.t,"Item")}).join("")+
+      '<div class="csfoot"><button class="btn ghost sm" type="button" data-k="itemadd" data-s="'+si+'">Add item</button><label class="ctrack"><input type="checkbox" data-k="track" data-s="'+si+'"'+(s.track?" checked":"")+"> Show as a budget</label></div></div>"}).join("")+
+    '<button class="btn ghost sm" type="button" data-k="secadd">Add section</button></section>';
+  h+='<section class="cblock"><h3>Set aside each month<small>savings, pocket money</small></h3>'+P.aside.map(function(x,i){return amtRow("aside",0,i,x.n,x.t,"Set aside")}).join("")+'<button class="btn ghost sm" type="button" data-k="asideadd">Add item</button></section>';
+  $("calcbody").innerHTML=h;refreshCalc();
+  if(after){var el=$("calcbody").querySelector(after);if(el){el.focus();el.scrollIntoView({block:"nearest"})}}}
+function refreshCalc(){var T=totals(PLAN);
+  document.querySelectorAll("#calcbody [data-tot]").forEach(function(el){el.textContent=gbp.format(T.sec[+el.dataset.tot]||0)});
+  var f=function(l,v){return"<div>"+l+'<strong'+(v<0?' class="neg"':"")+">"+gbp.format(v)+"</strong></div>"};
+  $("csum").innerHTML=f("Income",T.inc)+f("Costs",T.costs)+f("Left over",T.left)+f("Set aside",T.aside)+f("Fun money",T.fun);
+  $("cmsg").textContent=T.fun<0?"Your costs and savings add up to more than your income, so Fun money would be £0.":""}
+function openCalc(){PLAN=loadPlan();drawCalc();$("cmsg").textContent="";refreshCalc();$("calc").showModal()}
+$("calcbtn").onclick=openCalc;
+$("calcx").onclick=$("ccancel").onclick=function(){$("calc").close()};
+
+$("calcbody").addEventListener("input",function(e){var d=e.target.dataset,P=PLAN,i=+d.i,s=+d.s;if(!d.k||!P)return;var v=e.target.value;
+  if(d.k==="incn")P.income[i].n=v;else if(d.k==="inct")P.income[i].t=v;
+  else if(d.k==="itemn")P.sections[s].items[i].n=v;else if(d.k==="itemt")P.sections[s].items[i].t=v;
+  else if(d.k==="asiden")P.aside[i].n=v;else if(d.k==="asidet")P.aside[i].t=v;
+  else if(d.k==="secn")P.sections[s].n=v;else if(d.k==="track")P.sections[s].track=e.target.checked;
+  if(/t$/.test(d.k)&&d.k!=="track")e.target.classList.toggle("bad",isNaN(calc(v)));
+  refreshCalc()});
+$("calcbody").addEventListener("click",function(e){var b=e.target.closest("button[data-k]");if(!b)return;var d=b.dataset,P=PLAN,i=+d.i,s=+d.s,k=d.k;
+  if(k==="incx"){P.income.splice(i,1);drawCalc()}
+  else if(k==="incadd"){P.income.push({n:"",t:""});drawCalc('[data-k="incn"][data-i="'+(P.income.length-1)+'"]')}
+  else if(k==="itemx"){P.sections[s].items.splice(i,1);drawCalc()}
+  else if(k==="itemadd"){var it=P.sections[s].items;it.push({n:"",t:""});drawCalc('[data-k="itemn"][data-s="'+s+'"][data-i="'+(it.length-1)+'"]')}
+  else if(k==="secx"){P.sections.splice(s,1);drawCalc()}
+  else if(k==="secadd"){P.sections.push({n:"New section",track:true,items:[{n:"",t:""}]});drawCalc('[data-k="secn"][data-s="'+(P.sections.length-1)+'"]')}
+  else if(k==="asidex"){P.aside.splice(i,1);drawCalc()}
+  else if(k==="asideadd"){P.aside.push({n:"",t:""});drawCalc('[data-k="asiden"][data-i="'+(P.aside.length-1)+'"]')}});
+
+/* Import from the household budget spreadsheet layout: sections in columns A and C, income and set-aside figures in columns H and I */
+function parseSheet(rows){
+  var str=function(v){return String(v==null?"":v).replace(/\s+/g," ").trim()},num=function(v){return typeof v==="number"&&isFinite(v)?v:null},cell=function(r,c){return(rows[r]||[])[c]};
+  var fmt=function(v){return v==null?"":String(Math.round(v*100)/100)},P={income:[],sections:[],aside:[]};
+  for(var r=0;r<rows.length;r++){var a=str(cell(r,0));
+    if(a&&!/^(item|total)$/i.test(a)&&/^item$/i.test(str(cell(r+1,0)))){var sec={n:a,track:true,items:[]},q=r+2;
+      for(;q<rows.length;q++){var nm=str(cell(q,0));if(/^total$/i.test(nm))break;if(/^item$/i.test(nm))break;if(nm)sec.items.push({n:nm,t:fmt(num(cell(q,2)))})}
+      if(sec.items.length)P.sections.push(sec);r=q}}
+  for(var j=0;j<rows.length;j++){var l=str(cell(j,7)),v=num(cell(j,8));if(!l||v==null)continue;var lo=l.toLowerCase();
+    if(/total|left over|fun money/.test(lo))continue;
+    if(/pay|income|salary|wage/.test(lo))P.income.push({n:l,t:fmt(v)});
+    else if(/saving|pocket/.test(lo))P.aside.push({n:l,t:fmt(v)})}
+  if(!P.sections.length)return null;
+  if(!P.income.length)P.income=[{n:"Pay 1",t:""}];
+  if(!P.aside.length)P.aside=[{n:"Savings",t:""}];
+  return P}
+$("cimpbtn").onclick=function(){$("cimp").click()};
+$("cimp").onchange=function(){var f=this.files[0];this.value="";if(!f)return;
+  if(!window.XLSX){$("cmsg").textContent="The Excel reader hasn’t loaded yet. Try again in a moment.";return}
+  var r=new FileReader();r.onload=function(){try{var wb=XLSX.read(r.result,{type:"array"}),ws=wb.Sheets[wb.SheetNames[0]],p=parseSheet(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null}));
+    if(!p){$("cmsg").textContent="I couldn’t find any sections in that spreadsheet. Each section needs a title row followed by an “Item” row.";return}
+    PLAN=p;drawCalc();$("cmsg").textContent="Imported "+f.name+". Check the figures, then apply."}catch(e){$("cmsg").textContent="Could not read that file: "+(e.message||e)}};
+  r.readAsArrayBuffer(f)};
+
+var KW={"Groceries":["grocer","food","supermarket"],"Eating out":["eating","dining","restaurant","fun"],"Transport":["transport","cars","vehicle"],"Travel":["travel","holiday","fun"],"Shopping":["shopping","fun"],"Subscriptions":["subscri"],"Bills & utilities":["bill","utilit","household"],"Health & fitness":["gym","health","fitness","personal"],"Entertainment":["entertain","fun"]};
+function pickGroup(c,gs){var old=G.groups.find(function(g){return g.id===G.map[c]});
+  if(old){var i=gs.findIndex(function(g){return g.name.toLowerCase()===old.name.toLowerCase()});if(i>=0)return i}
+  var kws=KW[c]||[];for(var k=0;k<kws.length;k++){var j=gs.findIndex(function(g){return g.name.toLowerCase().indexOf(kws[k])>=0});if(j>=0)return j}
+  return gs.length-1}
+$("capply").onclick=async function(){
+  var b=this,m=$("cmsg"),P=PLAN,T=totals(P),oc={},gs=[];
+  G.groups.forEach(function(g){oc[g.name.toLowerCase()]=g.color});
+  P.sections.forEach(function(s,i){if(!s.track)return;var nm=(s.n||"").trim()||"Section "+(i+1);gs.push({name:nm,budget:Math.round(T.sec[i]*100)/100,catch_all:false,color:oc[nm.toLowerCase()]||"blue"})});
+  gs.push({name:"Fun money",budget:Math.max(0,Math.round(T.fun*100)/100),catch_all:true,color:oc["fun money"]||"blue"});
+  if(!gs.some(function(g){return g.budget>0})){m.textContent="Enter some amounts first.";return}
+  var map={};bcats().forEach(function(c){map[c]=pickGroup(c,gs)});
+  b.disabled=true;m.textContent="Applying...";savePlan(P);
+  E={groups:gs,map:map};drawEditor();await saveBudgets();
+  var bm=$("bmsg")?$("bmsg").textContent:"";b.disabled=false;
+  if(/^Could not/.test(bm)){m.textContent=bm;return}
+  m.textContent="";$("calc").close();
+  UNITS.forEach(function(u){if(u.closed&&$("budsec").contains(u.btn))setUnit(u,false)});
+  $("budsec").scrollIntoView({behavior:"smooth",block:"start"})};
 </script>
 </body>
 </html>
