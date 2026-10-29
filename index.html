@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amex spending analyser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+:root{--bg:#f1f3f6;--surface:#fff;--ink:#101828;--muted:#5b6577;--line:#dde2e9;--accent:#1f4fd8;--accent-ink:#fff;--soft:#eaeef7;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1220;--surface:#151c2e;--ink:#e8ecf4;--muted:#98a2b8;--line:#263049;--accent:#7aa2ff;--accent-ink:#0d1220;--soft:#1c2540;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1220;--surface:#151c2e;--ink:#e8ecf4;--muted:#98a2b8;--line:#263049;--accent:#7aa2ff;--accent-ink:#0d1220;--soft:#1c2540;color-scheme:dark}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+main{max-width:1040px;margin:0 auto;padding:28px 18px 64px}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.1;margin:0 0 6px;font-weight:700;letter-spacing:-.02em}
+h2{font-size:18px;margin:0 0 14px;font-weight:600}
+.sub{color:var(--muted);margin:0 0 24px;max-width:60ch}
+.drop{display:block;border:2px dashed var(--line);border-radius:14px;padding:36px 20px;text-align:center;background:var(--surface);cursor:pointer}
+.drop.over,.drop:hover,.drop:focus-within{border-color:var(--accent);background:var(--soft)}
+.drop b{display:block;font-size:20px;margin-bottom:4px}
+.drop span{color:var(--muted);font-size:14px}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+button,select,input[type=search]{font:inherit;color:inherit}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:focus-visible,select:focus-visible,input:focus-visible,.row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.err{color:#c2352b;margin-top:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:18px}
+.hero{display:flex;flex-wrap:wrap;gap:18px 40px;align-items:flex-end;justify-content:space-between}
+.big{font-size:clamp(40px,8vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1}
+.stats{display:flex;gap:28px;flex-wrap:wrap}
+.stats div{font-size:13px;color:var(--muted)}
+.stats strong{display:block;font-size:20px;color:var(--ink);font-weight:600}
+.grid{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:28px;align-items:center}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.donut{width:100%;max-width:300px;margin:0 auto;display:block}
+.row{display:grid;grid-template-columns:14px 1fr auto 52px;gap:10px;align-items:center;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:15px}
+.row:hover,.row.on{background:var(--soft)}
+.dot{width:12px;height:12px;border-radius:3px}
+.row .p{color:var(--muted);text-align:right;font-size:13px}
+.months{display:flex;gap:10px;align-items:flex-end;height:210px;overflow-x:auto;padding-top:6px}
+.m{flex:1 0 54px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:12px;color:var(--muted);cursor:pointer;border-radius:8px;padding:2px}
+.m.on{background:var(--soft)}
+.m .stack{width:70%;max-width:56px;display:flex;flex-direction:column-reverse;border-radius:5px;overflow:hidden;margin:3px 0}
+.m .stack i{display:block}
+.m em{font-style:normal;color:var(--ink);font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.two{grid-template-columns:1fr}}
+.merch{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
+.merch small{color:var(--muted)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;flex:1;min-width:160px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--muted);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:right;white-space:nowrap}
+td.d{white-space:nowrap;color:var(--muted)}
+select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;max-width:170px}
+.cr{color:#2f9e6b}
+.note{color:var(--muted);font-size:13px;margin-top:10px}
+[hidden]{display:none!important}
+:root{--bg:#fff;--surface:#fff;--ink:#202124;--muted:#5f6368;--line:#dadce0;--accent:#174ea6;--accent-ink:#fff;--soft:#f1f3f4;--tint:#d2e3fc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#202124;--surface:#202124;--ink:#e8eaed;--muted:#9aa0a6;--line:#3c4043;--accent:#8ab4f8;--accent-ink:#202124;--soft:#303134;--tint:#303134}}
+:root[data-theme="dark"]{--bg:#202124;--surface:#202124;--ink:#e8eaed;--muted:#9aa0a6;--line:#3c4043;--accent:#8ab4f8;--accent-ink:#202124;--soft:#303134;--tint:#303134}
+body{font-family:"Google Sans","Google Sans Text",Roboto,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1100px;padding-top:44px}
+h1{font-weight:400;letter-spacing:-.01em;font-size:clamp(34px,6vw,56px)}
+h2{font-weight:400;font-size:24px;margin-bottom:18px}
+.sub{font-size:clamp(18px,2.6vw,24px);line-height:1.5;color:var(--ink);max-width:46ch;margin-bottom:32px}
+.drop{background:var(--tint);border:2px solid transparent;border-radius:8px}
+.drop.over,.drop:hover,.drop:focus-within{border-color:var(--accent);background:var(--tint)}
+.drop b{font-weight:500}
+.btn{border-radius:999px;padding:10px 22px;font-weight:500}
+.btn.ghost{color:var(--accent);border-color:var(--line)}
+.panel{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;padding:36px 0;margin-top:0}
+.big{font-weight:400;letter-spacing:-.02em}
+.stats strong{font-weight:500}
+th{font-weight:500}
+select{border-radius:999px;padding:5px 12px}
+input[type=search]{border-radius:999px;padding:10px 18px;background:var(--soft);border-color:transparent}
+.cr{color:#34a853}
+#cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;justify-content:space-between;min-height:108px;padding:12px 14px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:500}
+.tile strong{font-size:22px;font-weight:500}
+.tile small{font-size:13px;font-weight:400;opacity:.92}
+.tile.on{outline:3px solid var(--ink);outline-offset:2px}
+.tile:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.m.on{background:var(--soft)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.icon{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer;display:grid;place-items:center}
+.icon:hover{background:var(--soft);color:var(--ink)}
+.icon:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:root[data-theme="light"] .icon .fa-sun,:root[data-theme="dark"] .icon .fa-moon{display:none}
+h3{font-size:16px;font-weight:500;margin:30px 0 10px}
+.ins{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 18px}
+.ins div{font-size:13px;color:var(--muted)}
+.ins strong{display:block;font-size:20px;font-weight:500;color:var(--ink)}
+.up{color:#d93025}.dn{color:#188038}
+:root[data-theme="dark"] .up{color:#f28b82}
+:root[data-theme="dark"] .dn{color:#81c995}
+.mrow{cursor:pointer}.mrow:hover,.mrow.on{background:var(--soft)}
+.heat td.c{position:sticky;left:0;background:var(--bg);white-space:nowrap}
+/* spacing: 8px grid, roomier sections, 44px+ touch targets */
+main{max-width:1120px;padding:56px 24px 112px}
+.top{gap:16px}
+h1{margin:0 0 12px}
+.sub{margin-bottom:48px;line-height:1.6}
+.drop{padding:56px 24px;border-radius:16px}
+.drop b{margin-bottom:8px}
+.bar{margin-top:16px;gap:12px}
+.err{margin-top:16px}
+.btn{padding:12px 24px;min-height:44px}
+.icon{width:48px;height:48px;margin-top:-4px}
+.panel{padding:56px 0}
+h2{margin:0 0 28px}
+h3{margin:48px 0 16px}
+.hero{gap:24px 56px}
+.stats{gap:24px 48px}
+.stats strong{margin-top:4px}
+.grid{gap:48px}
+#cats{gap:12px;grid-template-columns:repeat(auto-fill,minmax(168px,1fr))}
+.tile{padding:16px 18px;min-height:128px;border-radius:12px}
+.months{gap:12px;height:244px;padding:8px 0 12px}
+.m{padding:10px 4px;border-radius:12px;gap:2px}
+.ins{gap:24px 56px;margin-bottom:32px}
+.ins strong,.stats strong{line-height:1.3}
+th{padding:12px 16px}
+td{padding:14px 16px}
+.merch{padding:14px 0}
+.panel.two{gap:56px}
+.tools{gap:12px;margin-bottom:24px}
+input[type=search]{padding:12px 20px;min-height:44px}
+select{padding:8px 16px;min-height:36px}
+.note{margin-top:16px;line-height:1.6}
+.bar .note,.stats .note,.hero .note{margin-top:0}
+@media(max-width:720px){main{padding:32px 16px 80px}.panel{padding:40px 0}.grid,.panel.two{gap:32px}.sub{margin-bottom:32px}.stats{gap:20px 32px}th,td{padding:12px}}
+#auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+#auth[hidden]{display:none}
+.authcard{width:100%;max-width:400px;display:grid;gap:16px}
+.authcard h1{margin:0}
+.authcard label{display:grid;gap:6px;font-size:14px;color:var(--muted)}
+.authcard input{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font:inherit;min-height:44px}
+.authcard .btn{width:100%}
+.who{display:flex;align-items:center;gap:12px}
+.who .note{margin:0}
+@media(max-width:600px){#who{display:none}}
+</style>
+<script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="auth"><form id="authform" class="authcard"><h1>Amex spending analyser</h1><p class="note">Sign in to see your saved history.</p><label>Email<input id="em" type="email" autocomplete="username" required></label><label>Password<input id="pw" type="password" autocomplete="current-password" minlength="12" required></label><div class="err" id="amsg" role="alert"></div><button class="btn" type="submit">Sign in</button><button class="btn ghost" id="signup" type="button">Create account</button></form></div>
+<main hidden>
+<div class="top"><h1>Amex spending analyser</h1><div class="who"><span class="note" id="who"></span><button class="btn ghost" id="signout" type="button">Sign out</button><button class="icon" id="theme" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></button></div></div>
+<p class="sub">Upload the CSV from your Amex account each month. Your transactions are saved to your private account, so your history and month-by-month analysis build up over time.</p>
+
+<label class="drop" id="drop">
+  <b>Choose your statement CSV</b>
+  <span>or drag it here. In Amex online: Statements &amp; Activity, then Download, then CSV.</span>
+  <input type="file" id="file" accept=".csv,.txt,text/csv">
+</label>
+<div class="bar"><button class="btn ghost" id="sample" type="button">Try with sample data</button><span id="fname" class="note"></span></div>
+<div class="err" id="err" role="alert"></div>
+<div class="bar" id="savebar" hidden><button class="btn" id="save" type="button">Save to my history</button><button class="btn ghost" id="discard" type="button">Discard</button><span class="note" id="smsg"></span></div>
+
+<div id="out" hidden>
+  <section class="panel">
+    <div class="hero">
+      <div><div class="note" id="range"></div><div class="big" id="total"></div><div class="note" id="tlabel" style="margin-top:8px"></div><label class="note" style="display:block;margin-top:16px"><input type="checkbox" id="net"> Take off payments and credits</label><div style="margin-top:20px"><button class="btn" id="xlsx" type="button">Download as Excel</button><span class="note" id="xmsg" style="margin-left:12px"></span></div></div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Spending by category</h2>
+    <div class="grid"><div id="donut"></div><div id="cats"></div></div>
+    <p class="note">Select a category to filter the transactions below. Wrong category? Change it in the table and every transaction from that merchant updates.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Month by month</h2>
+    <div class="ins" id="ins"></div>
+    <div class="months" id="months"></div>
+    <h3>How each month compares</h3>
+    <div class="tw"><table><thead><tr><th>Month</th><th class="n">Spent</th><th class="n">Change</th><th class="n">Paid off</th><th class="n">Net</th><th class="n">Transactions</th><th>Top category</th></tr></thead><tbody id="mt"></tbody></table></div>
+    <h3>Category by month</h3>
+    <div class="tw"><table class="heat" id="heat"></table></div>
+    <p class="note">Select a month to filter the transactions below. The first and last months in your file may be partial, so they can look lower than they really are.</p>
+  </section>
+
+  <section class="panel two">
+    <div><h2>Biggest merchants</h2><div id="merch"></div></div>
+    <div><h2>Payments and credits</h2><div id="credits"></div>
+      <label class="note" style="display:block;margin-top:14px"><input type="checkbox" id="flip"> Charges show as negative in my file (flip signs)</label></div>
+  </section>
+
+  <section class="panel">
+    <h2>Transactions</h2>
+    <div class="tools"><input type="search" id="q" placeholder="Search descriptions" aria-label="Search descriptions"><button class="btn ghost" id="clear" type="button">Clear filters</button></div>
+    <div class="tw"><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="n">Amount</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="bar"><button class="btn ghost" id="more" type="button" hidden>Show all</button><span class="note" id="count"></span></div>
+  </section>
+</div>
+<section class="panel" id="upsec" hidden><h2>Upload history</h2><div class="tw"><table><thead><tr><th>Uploaded</th><th>File</th><th>Period</th><th class="n">Rows in file</th><th class="n">New rows saved</th></tr></thead><tbody id="uprows"></tbody></table></div></section>
+</main>
+
+<script>
+var PAY="Payments & credits",OTHER="Other";
+var RULES=[
+["Eating out","#e4572e","uber eats|deliveroo|just eat|restaurant|cafe|café|coffee|starbucks|pret|costa|nando|mcdonald|kfc|burger|pizza|pub |bar |wagamama|greggs|itsu|leon|dishoom|bistro|kitchen|grill|sushi|bakery"],
+["Groceries","#2f9e6b","tesco|sainsbury|asda|waitrose|morrisons|aldi|lidl|ocado|co-op|coop|iceland|m&s simply|supermarket|whole foods|grocer"],
+["Transport","#3b82c4","tfl|trainline|national rail|uber|bolt|shell|bp |esso|ncp|parking|petrol|lner|avanti|taxi|addison lee|gwr|southeastern|oyster|tube"],
+["Travel","#8a5cd0","airline|ryanair|easyjet|british airways|booking.com|airbnb|hotel|expedia|hilton|marriott|virgin atlantic|jet2|holiday|hostel|lufthansa|emirates"],
+["Shopping","#d98e04","amazon|amzn|ebay|argos|john lewis|zara|h&m|asos|next |primark|ikea|uniqlo|selfridges|etsy|marks & spencer|m&s|currys|decathlon|apple store"],
+["Subscriptions","#17a2b8","netflix|spotify|disney|apple.com/bill|itunes|google|icloud|youtube|adobe|microsoft|openai|anthropic|claude|audible|prime video|dropbox|patreon|substack|nowtv|now tv"],
+["Bills & utilities","#6b7a90","british gas|octopus|edf|thames water|bt |vodafone|ee |o2|virgin media|sky |council tax|insurance|tv licen|three|sse|e.on|severn trent|broadband"],
+["Health & fitness","#c2417c","boots|pharmacy|gym|puregym|fitness|dentist|optician|specsavers|superdrug|physio|holland & barrett|the gym|third space|barry"],
+["Entertainment","#a3b018","cinema|odeon|vue|ticketmaster|theatre|steam|playstation|xbox|nintendo|eventbrite|see tickets|museum|gallery"],
+["Fees & interest","#8c4a2f","interest|annual fee|late fee|membership fee|foreign transaction|fee"]
+];
+var CATS=RULES.map(function(r){return r[0]}).concat([OTHER,PAY]);
+var COL={};RULES.forEach(function(r){COL[r[0]]=r[1]});Object.assign(COL,{"Eating out":"#E37400","Groceries":"#34A853","Transport":"#4285F4","Travel":"#174EA6","Shopping":"#FBBC04","Subscriptions":"#A50E0E","Bills & utilities":"#0D652D","Health & fitness":"#EA4335","Entertainment":"#D2E3FC","Fees & interest":"#9AA0A6"});COL[OTHER]="#BDC1C6";COL[PAY]="#CEEAD6";
+function ink(h){var n=parseInt(h.slice(1),16),l=.299*(n>>16)+.587*(n>>8&255)+.114*(n&255);return l>150?"#202124":"#fff"}
+var S={raw:[],flip:false,over:{},fc:null,fm:null,q:"",all:false,auto:false};
+var $=function(i){return document.getElementById(i)};
+var gbp=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
+var gbp0=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP",maximumFractionDigits:0});
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function parseCSV(s){
+  s=s.replace(/^\uFEFF/,"");
+  var head=s.slice(0,2000),d=",",best=0;
+  [",",";","\t"].forEach(function(c){var n=head.split(c).length;if(n>best){best=n;d=c}});
+  var rows=[],r=[],f="",q=false;
+  for(var i=0;i<s.length;i++){var c=s[i];
+    if(q){if(c=='"'){if(s[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c=='"')q=true;
+    else if(c===d){r.push(f);f=""}
+    else if(c=="\n"||c=="\r"){if(c=="\r"&&s[i+1]=="\n")i++;r.push(f);f="";if(r.some(function(x){return x.trim()!==""}))rows.push(r);r=[]}
+    else f+=c}
+  r.push(f);if(r.some(function(x){return x.trim()!==""}))rows.push(r);
+  return rows}
+
+function pnum(s){if(s==null)return NaN;s=String(s).trim();if(!s)return NaN;
+  var neg=/^\(.*\)$/.test(s)||/CR$/i.test(s)||/^-/.test(s)||/-$/.test(s);
+  var n=parseFloat(s.replace(/[^0-9.]/g,""));return isNaN(n)?NaN:(neg?-n:n)}
+
+function pdate(s,order){s=String(s).trim();var m;
+  if(m=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/))return new Date(+m[1],m[2]-1,+m[3]);
+  if(m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/)){var a=+m[1],b=+m[2],y=+m[3];if(y<100)y+=2000;
+    return order==="mdy"?new Date(y,a-1,b):new Date(y,b-1,a)}
+  var t=Date.parse(s);return isNaN(t)?null:new Date(t)}
+
+function load(text,name){
+  $("err").textContent="";
+  var rows=parseCSV(text);
+  var hi=rows.findIndex(function(r){return r.some(function(c){return /^\s*date/i.test(c)})&&r.some(function(c){return /amount|debit|credit/i.test(c)})});
+  if(hi<0){$("err").textContent="I couldn’t find Date and Amount columns. Check this is the CSV download from Amex, not the PDF.";return}
+  var h=rows[hi].map(function(x){return x.trim().toLowerCase()});
+  var iD=h.findIndex(function(x){return /^date/.test(x)});
+  var iS=h.findIndex(function(x){return /^description/.test(x)});
+  if(iS<0)iS=h.findIndex(function(x){return /merchant|details|payee|narrative/.test(x)});
+  var iA=h.findIndex(function(x){return /^amount/.test(x)});
+  var iDb=h.findIndex(function(x){return /^debit/.test(x)}),iCr=h.findIndex(function(x){return /^credit/.test(x)});
+  if(iS<0||(iA<0&&iDb<0)){$("err").textContent="I couldn’t find a Description and Amount column in this file.";return}
+  var body=rows.slice(hi+1),order="dmy",a=0,b=0;
+  body.forEach(function(r){var m=String(r[iD]||"").match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-]\d{2,4}/);if(m){if(+m[1]>12)a++;if(+m[2]>12)b++}});
+  if(b>0&&a===0)order="mdy";
+  var raw=[],pos=0,neg=0;
+  body.forEach(function(r){
+    var dt=pdate(r[iD]||"",order),amt=iA>=0?pnum(r[iA]):((pnum(r[iDb])||0)-(pnum(r[iCr])||0));
+    if(!dt||isNaN(amt)||!(r[iS]||"").trim())return;
+    if(amt>0)pos++;else if(amt<0)neg++;
+    raw.push({date:dt,desc:r[iS].replace(/\s+/g," ").trim(),amt:amt})});
+  if(!raw.length){$("err").textContent="No transactions found in that file.";return}
+  S.raw=raw;S.flip=neg>pos;S.fc=null;S.fm=null;S.q="";S.all=false;
+  $("flip").checked=false;$("q").value="";$("fname").textContent=name||"";
+  S.preview=true;S.file=name||"upload.csv";$("savebar").hidden=false;$("smsg").textContent="Preview only. Check it looks right (tick the flip box if charges show as negative), then save.";$("out").hidden=false;render();$("out").scrollIntoView({behavior:"smooth"})}
+
+function keyOf(d){return d.toUpperCase().replace(/[0-9#*\/]+/g," ").replace(/\s+/g," ").trim().split(" ").slice(0,2).join(" ")}
+function derive(){
+  var f=S.flip!==$("flip").checked;
+  return S.raw.map(function(r){
+    var amt=f?-r.amt:r.amt,key=keyOf(r.desc),cat=S.over[key],low=" "+r.desc.toLowerCase()+" ";
+    if(!cat){if(amt<0)cat=PAY;else{cat=OTHER;for(var i=0;i<RULES.length;i++){if(new RegExp(RULES[i][2]).test(low)){cat=RULES[i][0];break}}}}
+    return{date:r.date,desc:r.desc,amt:amt,key:key,cat:cat}})}
+function isSpend(t){return t.cat!==PAY&&t.amt>0}
+function mk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
+function mlabel(k){var p=k.split("-");return new Date(+p[0],p[1]-1,1).toLocaleDateString("en-GB",{month:"short",year:"2-digit"})}
+function title(s){return s.toLowerCase().replace(/\b[a-z]/g,function(c){return c.toUpperCase()})}
+
+var T=[];
+function render(){
+  T=derive();var sp=T.filter(isSpend),total=sp.reduce(function(a,t){return a+t.amt},0);
+  var dates=T.map(function(t){return+t.date}),lo=new Date(Math.min.apply(null,dates)),hi=new Date(Math.max.apply(null,dates));
+  var fm=function(d){return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})};
+  $("range").textContent="Spent between "+fm(lo)+" and "+fm(hi);
+  var paid=T.filter(function(t){return t.cat===PAY}).reduce(function(a,t){return a+Math.abs(t.amt)},0),net=$("net").checked,left=total-paid;
+  $("total").textContent=gbp0.format(net?Math.abs(left):total);
+  $("tlabel").textContent=net?(left<0?"In credit after ":"Left to pay after ")+gbp0.format(paid)+" paid off. Only counts what is in this file, so any balance from before it is not included.":"Total spent, before payments and credits";
+  var by={},mon={},mer={};
+  sp.forEach(function(t){by[t.cat]=(by[t.cat]||0)+t.amt;var m=mk(t.date);(mon[m]=mon[m]||{})[t.cat]=((mon[m]||{})[t.cat]||0)+t.amt;
+    var k=t.key||t.desc;mer[k]=mer[k]||{n:0,s:0};mer[k].n++;mer[k].s+=t.amt});
+  var cl=Object.keys(by).sort(function(a,b){return by[b]-by[a]}),ms=Object.keys(mon).sort();
+  var maxT=sp.length?Math.max.apply(null,sp.map(function(t){return t.amt})):0;
+  $("stats").innerHTML=[["Transactions",sp.length],["Monthly average",gbp0.format(total/Math.max(ms.length,1))],["Largest purchase",gbp0.format(maxT)],["Top category",cl[0]||"–"]]
+    .map(function(x){return"<div>"+x[0]+"<strong>"+esc(x[1])+"</strong></div>"}).join("");
+
+  var R=70,C=2*Math.PI*R,acc=0,seg="";
+  cl.forEach(function(c){var s=by[c]/total*C;seg+='<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+COL[c]+'" stroke-width="30" stroke-dasharray="'+Math.max(s-1.5,0.5)+" "+(C-Math.max(s-1.5,0.5))+'" stroke-dashoffset="'+(-acc)+'" transform="rotate(-90 100 100)"><title>'+esc(c)+" "+gbp0.format(by[c])+"</title></circle>";acc+=s});
+  $("donut").innerHTML='<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="Spending by category">'+(seg||"")+'<text x="100" y="97" text-anchor="middle" font-size="12" fill="var(--muted)">Total</text><text x="100" y="118" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">'+gbp0.format(total)+"</text></svg>";
+  $("cats").innerHTML=cl.map(function(c){return'<div class="tile'+(S.fc===c?" on":"")+'" style="background:'+COL[c]+";color:"+ink(COL[c])+'" role="button" tabindex="0" data-cat="'+esc(c)+'"><span>'+esc(c)+"</span><span><strong>"+gbp0.format(by[c])+"</strong><br><small>"+(by[c]/total*100).toFixed(1)+"% of spend</small></span></div>"}).join("")||'<p class="note">No spending found.</p>';
+
+  var mx=Math.max.apply(null,ms.map(function(m){return Object.keys(mon[m]).reduce(function(a,c){return a+mon[m][c]},0)}).concat([1]));
+  $("months").innerHTML=ms.map(function(m){var tot=0,segs="";
+    cl.forEach(function(c){var v=mon[m][c]||0;tot+=v;if(v)segs+='<i title="'+esc(c)+" "+gbp0.format(v)+'" style="height:'+(v/mx*130)+"px;background:"+COL[c]+'"></i>'});
+    return'<div class="m'+(S.fm===m?" on":"")+'" role="button" tabindex="0" data-m="'+m+'"><em>'+gbp0.format(tot)+'</em><div class="stack">'+segs+"</div>"+mlabel(m)+"</div>"}).join("");
+
+  monthly(mon,ms,cl,sp);
+  $("merch").innerHTML=Object.keys(mer).sort(function(a,b){return mer[b].s-mer[a].s}).slice(0,8).map(function(k){return'<div class="merch"><span>'+esc(title(k))+" <small>"+mer[k].n+"×</small></span><strong>"+gbp.format(mer[k].s)+"</strong></div>"}).join("")||'<p class="note">None.</p>';
+  var cr=T.filter(function(t){return t.cat===PAY}),crT=cr.reduce(function(a,t){return a+Math.abs(t.amt)},0);
+  $("credits").innerHTML='<div class="big" style="font-size:32px" class="cr">'+gbp0.format(crT)+'</div><p class="note">'+cr.length+" payments, refunds and credits. These aren’t counted as spending.</p>";
+  rows()}
+
+function monthly(mon,ms,cl,sp){
+  if(!ms.length){$("ins").innerHTML="";$("mt").innerHTML="";$("heat").innerHTML="";return}
+  var sum=function(a,b){return a+b},tot=ms.map(function(m){return Object.keys(mon[m]).reduce(function(a,c){return a+mon[m][c]},0)}),cnt={};
+  sp.forEach(function(t){var m=mk(t.date);cnt[m]=(cnt[m]||0)+1});
+  var pm={};T.forEach(function(t){if(t.cat===PAY){var k=mk(t.date);pm[k]=(pm[k]||0)+Math.abs(t.amt)}});
+  var hi=tot.indexOf(Math.max.apply(null,tot)),lo=tot.indexOf(Math.min.apply(null,tot));
+  $("ins").innerHTML=[["Highest month",mlabel(ms[hi])+" · "+gbp0.format(tot[hi])],["Lowest month",mlabel(ms[lo])+" · "+gbp0.format(tot[lo])],["Average month",gbp0.format(tot.reduce(sum,0)/tot.length)]].map(function(x){return"<div>"+x[0]+"<strong>"+esc(x[1])+"</strong></div>"}).join("");
+  $("mt").innerHTML=ms.map(function(m,i){
+    var top=cl.slice().sort(function(a,b){return(mon[m][b]||0)-(mon[m][a]||0)})[0],ch="–";
+    if(i>0&&tot[i-1]>0){var d=tot[i]-tot[i-1];ch='<span class="'+(d>0?"up":"dn")+'">'+(d>0?"▲ +":"▼ −")+gbp0.format(Math.abs(d))+" ("+Math.abs(d/tot[i-1]*100).toFixed(0)+"%)</span>"}
+    return'<tr class="mrow'+(S.fm===m?" on":"")+'" role="button" tabindex="0" data-m="'+m+'"><td>'+mlabel(m)+'</td><td class="n">'+gbp0.format(tot[i])+'</td><td class="n">'+ch+'</td><td class="n dn">'+(pm[m]?"−"+gbp0.format(pm[m]):"–")+'</td><td class="n">'+gbp0.format(tot[i]-(pm[m]||0))+'</td><td class="n">'+cnt[m]+'</td><td>'+esc(top)+' <small class="note">'+gbp0.format(mon[m][top]||0)+"</small></td></tr>"}).join("");
+  var mx=0;cl.forEach(function(c){ms.forEach(function(m){mx=Math.max(mx,mon[m][c]||0)})});
+  $("heat").innerHTML='<thead><tr><th>Category</th>'+ms.map(function(m){return'<th class="n">'+mlabel(m)+"</th>"}).join("")+'<th class="n">Total</th></tr></thead><tbody>'+cl.map(function(c){var s=0,cells=ms.map(function(m){var v=mon[m][c]||0;s+=v;return'<td class="n"'+(v?' style="background:color-mix(in srgb,var(--accent) '+Math.round(v/mx*40)+'%,transparent)"':"")+">"+(v?gbp0.format(v):"–")+"</td>"}).join("");
+    return'<tr><td class="c"><i class="dot" style="display:inline-block;margin-right:8px;background:'+COL[c]+'"></i>'+esc(c)+"</td>"+cells+'<td class="n"><strong>'+gbp0.format(s)+"</strong></td></tr>"}).join("")+"</tbody>"}
+
+function exportXlsx(){
+  var msg=$('xmsg');msg.textContent='';
+  if(!window.XLSX||!T.length){msg.textContent='Excel export is not ready yet. Try again in a moment.';return}
+  var add=function(a,b){return a+b},Z='[$£-809]#,##0.00',
+    sp=T.filter(isSpend),pay=T.filter(function(t){return t.cat===PAY}),
+    total=sp.map(function(t){return t.amt}).reduce(add,0),paid=pay.map(function(t){return Math.abs(t.amt)}).reduce(add,0),
+    by={},mon={},pm={},cnt={},mset={};
+  sp.forEach(function(t){var m=mk(t.date);by[t.cat]=(by[t.cat]||0)+t.amt;mon[m]=mon[m]||{};mon[m][t.cat]=(mon[m][t.cat]||0)+t.amt;cnt[m]=(cnt[m]||0)+1;mset[m]=1});
+  pay.forEach(function(t){var m=mk(t.date);pm[m]=(pm[m]||0)+Math.abs(t.amt);mset[m]=1});
+  var ms=Object.keys(mset).sort(),cl=Object.keys(by).sort(function(a,b){return by[b]-by[a]}),
+    mt=function(m){var o=mon[m]||{};return Object.keys(o).reduce(function(a,c){return a+o[c]},0)},
+    mx=sp.length?Math.max.apply(null,sp.map(function(t){return t.amt})):0;
+  var wb=XLSX.utils.book_new();
+  function sheet(name,aoa,w,fm){var ws=XLSX.utils.aoa_to_sheet(aoa,{cellDates:true});ws['!cols']=w.map(function(x){return{wch:x}});
+    var r=XLSX.utils.decode_range(ws['!ref']);
+    for(var R=0;R<=r.e.r;R++)for(var C=0;C<=r.e.c;C++){var c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&(c.t==='n'||c.t==='d')&&fm[C])c.z=fm[C]}
+    XLSX.utils.book_append_sheet(wb,ws,name);return ws}
+  var s1=[['Period',$('range').textContent.replace('Spent between ','')],['Total spent',total],['Payments and credits',paid],['Left to pay (spent minus paid off)',total-paid],['Transactions',sp.length],['Monthly average',total/Math.max(Object.keys(mon).length,1)],['Largest purchase',mx],[],['Category','Spent','% of spend']].concat(cl.map(function(c){return[c,by[c],total?by[c]/total:0]}));
+  var w1=sheet('Summary',s1,[36,24,12],{1:Z,2:'0.0%'});w1['B5'].z='0';
+  var s2=[['Month','Spent','Paid off','Left to pay','Change on previous month','Change %','Transactions','Top category']].concat(ms.map(function(m,i){var s=mt(m),prev=i?mt(ms[i-1]):0,o=mon[m]||{},top=cl.slice().sort(function(a,b){return(o[b]||0)-(o[a]||0)})[0];
+    return[mlabel(m),s,pm[m]||0,s-(pm[m]||0),i?s-prev:null,i&&prev>0?(s-prev)/prev:null,cnt[m]||0,s?top:null]}));
+  sheet('Month by month',s2,[12,14,14,14,24,12,14,22],{1:Z,2:Z,3:Z,4:Z,5:'0.0%',6:'0'});
+  var s3=[['Category'].concat(ms.map(function(m){return mlabel(m)}),['Total'])].concat(cl.map(function(c){return[c].concat(ms.map(function(m){return(mon[m]||{})[c]||0}),[by[c]])})),fm3={};
+  for(var k=1;k<=ms.length+1;k++)fm3[k]=Z;
+  sheet('Category by month',s3,[22].concat(ms.map(function(){return 12}),[14]),fm3);
+  var s4=[['Date','Description','Category','Amount']].concat(T.slice().sort(function(a,b){return b.date-a.date}).map(function(t){return[t.date,t.desc,t.cat,t.amt]}));
+  var w4=sheet('Transactions',s4,[14,48,20,14],{0:'dd mmm yyyy',3:Z});w4['!autofilter']={ref:w4['!ref']};
+  var fn='Amex-spending-'+new Date().toISOString().slice(0,10)+'.xlsx',out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  if(window.claude&&claude.use){
+    claude.use('downloads').then(function(dl){if(!dl){msg.textContent='Saving files is not available in this view.';return}
+      return dl.save({filename:fn,data:new Blob([out])}).then(function(){msg.textContent='Saved '+fn})})
+    .catch(function(e){if(!e||e.code!=='declined')msg.textContent='Could not save the file'+(e&&e.code?' ('+e.code+')':'')+'.'})}
+  else{XLSX.writeFile(wb,fn);msg.textContent='Saved '+fn}}
+
+function rows(){
+  var q=S.q.toLowerCase(),L=T.filter(function(t){return(!S.fc||t.cat===S.fc)&&(!S.fm||mk(t.date)===S.fm)&&(!q||t.desc.toLowerCase().indexOf(q)>-1)}).sort(function(a,b){return b.date-a.date});
+  var show=S.all?L:L.slice(0,100);
+  $("rows").innerHTML=show.map(function(t){return"<tr><td class='d'>"+t.date.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"})+"</td><td>"+esc(t.desc)+"</td><td><select data-key=\""+esc(t.key)+"\" aria-label=\"Category\">"+CATS.map(function(c){return"<option"+(c===t.cat?" selected":"")+">"+esc(c)+"</option>"}).join("")+"</select></td><td class='n"+(t.amt<0?" cr":"")+"'>"+(t.amt<0?"+":"")+gbp.format(Math.abs(t.amt))+"</td></tr>"}).join("");
+  $("count").textContent="Showing "+show.length+" of "+L.length+(S.fc?" in "+S.fc:"")+(S.fm?" for "+mlabel(S.fm):"");
+  $("more").hidden=S.all||L.length<=100}
+
+function act(e){var c=e.target.closest("[data-cat]"),m=e.target.closest("[data-m]");
+  if(c){S.fc=S.fc===c.dataset.cat?null:c.dataset.cat;S.all=false;render()}
+  else if(m){S.fm=S.fm===m.dataset.m?null:m.dataset.m;S.all=false;render()}}
+document.addEventListener("click",act);
+document.addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-cat],[data-m]")){e.preventDefault();act(e)}});
+document.addEventListener("change",function(e){if(e.target.dataset&&e.target.dataset.key!==undefined){S.over[e.target.dataset.key]=e.target.value;render()}});
+function setTheme(t,save){document.documentElement.dataset.theme=t;var b=$("theme"),l=t==="dark"?"Switch to light mode":"Switch to dark mode";b.setAttribute("aria-label",l);b.title=l;if(save){try{localStorage.setItem("theme",t)}catch(e){}}}
+$("theme").onclick=function(){setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark",true)};
+setTheme(document.documentElement.dataset.theme||"light",false);
+window.addEventListener("load",function(){if(!$("theme").querySelector("svg"))$("theme").textContent="◐"});
+$("flip").onchange=render;$("net").onchange=render;$("xlsx").onclick=exportXlsx;
+$("q").oninput=function(){S.q=this.value;S.all=false;rows()};
+$("clear").onclick=function(){S.fc=S.fm=null;S.q="";$("q").value="";S.all=false;render()};
+$("more").onclick=function(){S.all=true;rows()};
+
+function readFile(f){if(!f)return;var r=new FileReader();r.onload=function(){load(r.result,f.name)};r.readAsText(f)}
+$("file").onchange=function(){readFile(this.files[0])};
+var dz=$("drop");
+["dragenter","dragover"].forEach(function(n){dz.addEventListener(n,function(e){e.preventDefault();dz.classList.add("over")})});
+["dragleave","drop"].forEach(function(n){dz.addEventListener(n,function(e){e.preventDefault();dz.classList.remove("over")})});
+dz.addEventListener("drop",function(e){readFile(e.dataTransfer.files[0])});
+
+$("sample").onclick=function(){
+  var items=[["TESCO STORES 3421 LONDON",54.2,3],["SAINSBURYS S/MKT LONDON",61.2,10],["WAITROSE 112 LONDON",32.8,17],["TFL TRAVEL CHARGE TFL.GOV.UK",24.5,5],["UBER *TRIP HELP.UBER.COM",17.3,12],["PRET A MANGER LONDON",6.45,6],["NANDOS LONDON",32.1,14],["DELIVEROO LONDON",28.9,19],["STARBUCKS COFFEE LONDON",4.85,8],["AMAZON.CO.UK*2K4 AMZN.CO.UK",42.99,9],["ZARA LONDON",59.95,21],["NETFLIX.COM",10.99,2],["SPOTIFY STOCKHOLM",11.99,2],["BRITISH GAS SERVICES",78,15],["THAMES WATER",35,15],["VODAFONE LTD",24,11],["BOOTS 2231 LONDON",14.2,13],["PUREGYM LONDON",24.99,1],["ODEON CINEMAS LONDON",23.5,22]];
+  var now=new Date(),csv="Date,Description,Card Member,Account #,Amount\n";
+  [2,1,0].forEach(function(b,mi){var base=new Date(now.getFullYear(),now.getMonth()-b,1);
+    items.forEach(function(it,i){var v=it[1]*(1+(((i*7+mi*3)%5)-2)/10),d=new Date(base.getFullYear(),base.getMonth(),Math.min(it[2],27));
+      csv+=[String(d.getDate()).padStart(2,"0"),String(d.getMonth()+1).padStart(2,"0"),d.getFullYear()].join("/")+',"'+it[0]+'",A SMITH,-12345,'+v.toFixed(2)+"\n"});
+    if(mi===1)csv+="12/"+String(base.getMonth()+1).padStart(2,"0")+"/"+base.getFullYear()+',"AIRBNB * HMXYZ",A SMITH,-12345,412.00\n';
+    csv+="28/"+String(base.getMonth()+1).padStart(2,"0")+"/"+base.getFullYear()+',"PAYMENT RECEIVED - THANK YOU",A SMITH,-12345,-600.00\n'});
+  load(csv,"Sample data")};
+
+/* ---------- Supabase: login, saved history, category rules ---------- */
+var SB_URL="https://ahijsujpcwnmehjhiknx.supabase.co",SB_KEY="sb_publishable_XgqizTZScHD5XTaGdudvTA_m4kjFsFo";
+var sb=window.supabase.createClient(SB_URL,SB_KEY),USER=null,loadedFor=null;
+function authMsg(t){$("amsg").textContent=t}
+$("authform").onsubmit=function(e){e.preventDefault();authMsg("");sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value}).then(function(r){if(r.error)authMsg(r.error.message)})};
+$("signup").onclick=function(){var em=$("em").value.trim(),pw=$("pw").value;if(!em||pw.length<12){authMsg("Enter your email and a password of at least 12 characters.");return}
+  sb.auth.signUp({email:em,password:pw}).then(function(r){authMsg(r.error?r.error.message:"Account created. If email confirmation is on, check your inbox, then sign in.")})};
+$("signout").onclick=function(){sb.auth.signOut()};
+sb.auth.onAuthStateChange(function(ev,session){
+  USER=session?session.user:null;
+  if(USER){document.querySelector("main").hidden=false;$("auth").hidden=true;$("who").textContent=USER.email;
+    if(loadedFor!==USER.id){loadedFor=USER.id;setTimeout(function(){$("sample").hidden=true;loadHistory()},0)}}
+  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};$("out").hidden=true;$("upsec").hidden=true;$("savebar").hidden=true}});
+
+async function loadHistory(){
+  S.preview=false;$("savebar").hidden=true;$("err").textContent="";
+  var all=[],from=0,step=1000;
+  for(;;){var r=await sb.from("transactions").select("txn_date,description,amount").order("txn_date",{ascending:true}).order("id").range(from,from+step-1);
+    if(r.error){$("err").textContent="Could not load your history: "+r.error.message;return}
+    all=all.concat(r.data);if(r.data.length<step)break;from+=step}
+  var rl=await sb.from("category_rules").select("key,category");
+  S.over={};(rl.data||[]).forEach(function(x){S.over[x.key]=x.category});
+  loadUploads();
+  if(!all.length){$("out").hidden=true;$("fname").textContent="No saved transactions yet. Upload your first CSV above.";return}
+  S.raw=all.map(function(x){var p=x.txn_date.split("-");return{date:new Date(+p[0],p[1]-1,+p[2]),desc:x.description,amt:Number(x.amount)}});
+  S.flip=false;S.fc=S.fm=null;S.q="";S.all=false;$("flip").checked=false;$("q").value="";
+  $("fname").textContent="Showing your full history: "+all.length+" saved transactions";
+  $("out").hidden=false;render()}
+
+function loadUploads(){
+  var f=function(s){var p=s.split("-");return new Date(+p[0],p[1]-1,+p[2]).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"})};
+  sb.from("uploads").select("*").order("uploaded_at",{ascending:false}).limit(50).then(function(r){var d=r.data||[];$("upsec").hidden=!d.length;
+    $("uprows").innerHTML=d.map(function(u){return"<tr><td>"+new Date(u.uploaded_at).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+"</td><td>"+esc(u.file_name)+"</td><td>"+f(u.date_from)+" to "+f(u.date_to)+'</td><td class="n">'+u.rows_in_file+'</td><td class="n">'+u.rows_added+"</td></tr>"}).join("")})}
+
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+async function sha(s){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+$("discard").onclick=loadHistory;
+$("save").onclick=async function(){
+  var b=this,m=$("smsg");b.disabled=true;m.textContent="Saving...";
+  try{
+    var seen={},rows=[],list=derive();
+    for(var i=0;i<list.length;i++){var t=list[i],base=iso(t.date)+"|"+t.desc+"|"+t.amt.toFixed(2);seen[base]=(seen[base]||0)+1;
+      rows.push({txn_date:iso(t.date),description:t.desc.slice(0,500),amount:t.amt,fingerprint:await sha(base+"|"+seen[base]),source_file:String(S.file).slice(0,255)})}
+    var added=0;
+    for(var j=0;j<rows.length;j+=500){var r=await sb.from("transactions").upsert(rows.slice(j,j+500),{onConflict:"user_id,fingerprint",ignoreDuplicates:true}).select("id");if(r.error)throw r.error;added+=r.data.length}
+    var ds=rows.map(function(x){return x.txn_date}).sort();
+    var u=await sb.from("uploads").insert({file_name:String(S.file).slice(0,255),rows_in_file:rows.length,rows_added:added,date_from:ds[0],date_to:ds[ds.length-1]});if(u.error)throw u.error;
+    var skipped=rows.length-added,fn=S.file;await loadHistory();
+    $("fname").textContent="Saved "+added+" new transactions from "+fn+(skipped?" ("+skipped+" were already in your history)":"")+". Showing your full history."
+  }catch(e){m.textContent="Could not save: "+(e.message||e)}
+  b.disabled=false};
+
+document.addEventListener("change",function(e){var d=e.target.dataset;
+  if(USER&&d&&d.key!==undefined){sb.from("category_rules").upsert({key:d.key,category:e.target.value},{onConflict:"user_id,key"}).then(function(r){if(r.error)$("err").textContent="Could not save that category: "+r.error.message})}});
+</script>
+</body>
+</html>
