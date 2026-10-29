@@ -257,10 +257,10 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 .panel.all-collapsed{padding-top:12px!important;padding-bottom:12px!important}
 @media(prefers-reduced-motion:reduce){.chev{transition:none}}
 /* budget ring colours: medium = used, light = not used yet */
-.bcard{--used:#4285F4;--track:#D2E3FC}
-.bcard[data-c="red"]{--used:#EA4335;--track:#FAD2CF}
-.bcard[data-c="yellow"]{--used:#FBBC04;--track:#FEEFC3}
-.bcard[data-c="green"]{--used:#34A853;--track:#CEEAD6}
+.bcard{--used:#5A6FAF;--track:#D2DDF0}
+.bcard[data-c="red"]{--used:#CA4C40;--track:#EFCDC9}
+.bcard[data-c="yellow"]{--used:#E9B847;--track:#F9EFC1}
+.bcard[data-c="green"]{--used:#5B9C53;--track:#CEE4D0}
 :root[data-theme="dark"] .bcard{--used:#8AB4F8;--track:color-mix(in srgb,#8AB4F8 24%,transparent)}
 :root[data-theme="dark"] .bcard[data-c="red"]{--used:#F28B82;--track:color-mix(in srgb,#F28B82 24%,transparent)}
 :root[data-theme="dark"] .bcard[data-c="yellow"]{--used:#FDD663;--track:color-mix(in srgb,#FDD663 24%,transparent)}
@@ -273,10 +273,9 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 .sw i{position:relative;display:block;width:28px;height:28px;border-radius:50%;background:var(--m);transition:transform .15s}
 .sw label:hover i{transform:scale(1.08)}
 .sw input:checked+i{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
-.sw input:checked+i::after{content:"";position:absolute;left:10px;top:5px;width:6px;height:12px;border:solid var(--k);border-width:0 3px 3px 0;transform:rotate(45deg)}
 .sw input:focus-visible+i{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
 /* budget calculator dialog */
-#calc{width:min(760px,calc(100% - 32px));max-height:min(90vh,900px);padding:0;border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+#calc{width:70vw;min-width:min(640px,calc(100% - 32px));max-width:calc(100% - 32px);max-height:min(90vh,900px);padding:0;border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);box-shadow:0 8px 32px rgba(0,0,0,.25)}
 #calc[open]{display:flex;flex-direction:column}
 #calc::backdrop{background:rgba(32,33,36,.6)}
 .chead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px 8px}
@@ -659,7 +658,7 @@ document.addEventListener("change",function(e){var d=e.target.dataset;
 
 /* ---------- Budget groups ---------- */
 var G={groups:[],map:{}},E=null,BU={sp:[],ms:[]},HASCOL=true;
-var PAL={blue:["Blue","#4285F4","#D2E3FC"],red:["Red","#EA4335","#FAD2CF"],yellow:["Yellow","#FBBC04","#FEEFC3"],green:["Green","#34A853","#CEEAD6"]};
+var PAL={blue:["Blue","#5A6FAF","#D2DDF0"],red:["Red","#CA4C40","#EFCDC9"],yellow:["Yellow","#E9B847","#F9EFC1"],green:["Green","#5B9C53","#CEE4D0"]};
 function lsColors(){try{return JSON.parse(localStorage.getItem("bcolors")||"{}")||{}}catch(e){return{}}}
 function colorFor(name,c){return PAL[c]?c:(PAL[lsColors()[name]]?lsColors()[name]:"blue")}
 function defaultGroups(){G.groups=[{id:"d1",name:"Fun money",budget:0,catch_all:false,color:colorFor("Fun money")},{id:"d2",name:"Groceries",budget:0,catch_all:false,color:colorFor("Groceries")},{id:"d3",name:"Bills",budget:0,catch_all:true,color:colorFor("Bills")}];
@@ -751,20 +750,20 @@ function fit(el,minW){var n=el.children.length;if(!n)return;var g=parseFloat(get
 [["cats",168],["bcards",260]].forEach(function(x){var el=$(x[0]),f=function(){fit(el,x[1])};el.classList.add("fit");new ResizeObserver(f).observe(el);new MutationObserver(f).observe(el,{childList:true});f()});
 
 /* ---------- Collapsible sections ---------- */
-var UNITS=[],COLL={};try{COLL=JSON.parse(localStorage.getItem("collapsed")||"{}")||{}}catch(e){}
+var UNITS=[],COLL={},OPEN0=["Budgets","Your statements","Spending by category"];try{COLL=JSON.parse(localStorage.getItem("collapsed2")||"{}")||{}}catch(e){}
 function paintUnit(u){u.body.hidden=u.closed;u.btn.setAttribute("aria-expanded",String(!u.closed));u.hd.classList.toggle("is-collapsed",u.closed);u.h.classList.toggle("is-collapsed",u.closed);
   if(u.panel){u.panel.classList.toggle("all-collapsed",UNITS.filter(function(x){return x.panel===u.panel}).every(function(x){return x.closed}))}
   $("colall").textContent=UNITS.some(function(x){return!x.closed})?"Collapse all":"Expand all"}
-function setUnit(u,closed){u.closed=closed;COLL[u.key]=closed;try{localStorage.setItem("collapsed",JSON.stringify(COLL))}catch(e){}paintUnit(u)}
+function setUnit(u,closed){u.closed=closed;COLL[u.key]=closed;try{localStorage.setItem("collapsed2",JSON.stringify(COLL))}catch(e){}paintUnit(u)}
 (function(){var chev='<svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>';
   document.querySelectorAll("#upsec h2,#out h2,#budsec h2").forEach(function(h,i){
     var hd=h.parentNode.classList.contains("top")?h.parentNode:h,host=hd.parentNode,body=document.createElement("div"),btn=document.createElement("button");
     body.className="cbody";body.id="cbody"+i;while(hd.nextSibling)body.appendChild(hd.nextSibling);host.appendChild(body);
     btn.type="button";btn.className="ctog";btn.setAttribute("aria-controls",body.id);while(h.firstChild)btn.appendChild(h.firstChild);btn.insertAdjacentHTML("beforeend",chev);h.appendChild(btn);
-    var panel=host.closest(".panel"),u={key:"s"+i,hd:hd,h:h,btn:btn,body:body,panel:panel,closed:!!COLL["s"+i]};UNITS.push(u);
+    var panel=host.closest(".panel"),u={key:"s"+i,hd:hd,h:h,btn:btn,body:body,panel:panel,closed:COLL["s"+i]===undefined?OPEN0.indexOf(h.textContent.trim())<0:!!COLL["s"+i]};UNITS.push(u);
     btn.onclick=function(){setUnit(u,!u.closed)}});
   UNITS.forEach(paintUnit)})();
-$("colall").onclick=function(){var close=UNITS.some(function(x){return!x.closed});UNITS.forEach(function(u){u.closed=close;COLL[u.key]=close});try{localStorage.setItem("collapsed",JSON.stringify(COLL))}catch(e){}UNITS.forEach(paintUnit)};
+$("colall").onclick=function(){var close=UNITS.some(function(x){return!x.closed});UNITS.forEach(function(u){u.closed=close;COLL[u.key]=close});try{localStorage.setItem("collapsed2",JSON.stringify(COLL))}catch(e){}UNITS.forEach(paintUnit)};
 document.addEventListener("click",function(e){if(!e.target.closest("[data-cat],[data-m]"))return;UNITS.forEach(function(u){if(u.closed&&$("txsec").contains(u.btn))setUnit(u,false)})});
 
 /* ---------- Budget calculator ---------- */
