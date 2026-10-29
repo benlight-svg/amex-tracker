@@ -326,6 +326,10 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 #rn input[type=text]{width:100%;min-height:40px;padding:8px 12px;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px}
 #rn input.bad{border-color:#d93025}
 @media(max-width:600px){#rn .chead,#rnbody,#rn .cfoot{padding-left:16px;padding-right:16px}}
+#rn input[type=color]{width:40px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer}
+.rncu{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:8px;align-items:center;margin-bottom:16px}
+.rncu .kw{grid-column:2}
+#rn h3{margin:24px 0 12px;font-size:18px;line-height:1.3}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -361,8 +365,8 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
     <h2>Spending by category</h2>
     <div class="grid"><div id="donut"></div><div id="cats"></div></div>
     <div class="unusual" id="unusual" hidden></div>
-    <p class="note">Select a category to filter the transactions below. Wrong category? Change it in the table, then choose whether it applies to every transaction from that merchant or just that one.</p>
-    <div class="bar" style="margin-top:16px"><button class="btn ghost" id="rnbtn" type="button"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Rename categories</span></button></div>
+    <p class="note">Select a category to filter the transactions below. Use Edit categories to rename them or add your own. Wrong category? Change it in the table, then choose whether it applies to every transaction from that merchant or just that one.</p>
+    <div class="bar" style="margin-top:16px"><button class="btn ghost" id="rnbtn" type="button"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Edit categories</span></button></div>
   </section>
 
   <section class="panel">
@@ -406,7 +410,7 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 <section class="panel" id="upsec" hidden><h2>Your statements</h2><div class="tw"><table><thead><tr><th>Uploaded</th><th>File</th><th>Period</th><th class="n">Rows in file</th><th class="n">New rows saved</th></tr></thead><tbody id="uprows"></tbody></table></div></section>
 </main>
 <dialog id="rn" aria-labelledby="rnh">
-<div class="chead"><h2 id="rnh">Rename categories</h2><button class="cx" id="rnx" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
+<div class="chead"><h2 id="rnh">Edit categories</h2><button class="cx" id="rnx" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
 <div id="rnbody"></div>
 <div class="cfoot"><p class="note" id="rnmsg" role="alert" style="margin:0 0 12px"></p><div class="cbtns"><button class="btn ghost" id="rnreset" type="button">Reset all</button><span class="sp"></span><button class="btn ghost" id="rncancel" type="button">Cancel</button><button class="btn" id="rnsave" type="button">Save</button></div></div>
 </dialog>
@@ -432,7 +436,9 @@ var RULES=[
 ["Entertainment","#a3b018","cinema|odeon|vue|ticketmaster|theatre|steam|playstation|xbox|nintendo|eventbrite|see tickets|museum|gallery"],
 ["Fees & interest","#8c4a2f","interest|annual fee|late fee|membership fee|foreign transaction|fee"]
 ];
-var CATS=RULES.map(function(r){return r[0]}).concat([OTHER,PAY]);
+var CUSTOM=[],BASECATS=RULES.map(function(r){return r[0]}),CATS=BASECATS.concat([OTHER,PAY]);
+function rebuildCats(){CATS=BASECATS.concat(CUSTOM.map(function(x){return x.id}),[OTHER,PAY]);CUSTOM.forEach(function(x){COL[x.id]=x.col})}
+function customMatch(low){for(var i=0;i<CUSTOM.length;i++){var k=String(CUSTOM[i].kw||"").toLowerCase().split(",");for(var j=0;j<k.length;j++){var w=k[j].trim();if(w&&low.indexOf(w)>=0)return CUSTOM[i].id}}return null}
 var COL={};RULES.forEach(function(r){COL[r[0]]=r[1]});Object.assign(COL,{"Eating out":"#E37400","Groceries":"#34A853","Transport":"#4285F4","Travel":"#174EA6","Shopping":"#FBBC04","Subscriptions":"#A50E0E","Bills & utilities":"#0D652D","Health & fitness":"#EA4335","Entertainment":"#D2E3FC","Fees & interest":"#9AA0A6"});COL[OTHER]="#BDC1C6";COL[PAY]="#CEEAD6";
 function ink(h){var n=parseInt(h.slice(1),16),l=.299*(n>>16)+.587*(n>>8&255)+.114*(n&255);return l>150?"#202124":"#fff"}
 var S={raw:[],flip:false,over:{},tover:{},pend:null,fc:null,fm:null,q:"",all:false,auto:false};
@@ -499,9 +505,9 @@ function derive(){
     var sh=function(d){var p=d.split("-");return new Date(+p[0],p[1]-1,+p[2]).toLocaleDateString("en-GB",{day:"numeric",month:"short"})};
     Object.keys(st).forEach(function(k){var o=st[k];o.k=o.a+"|"+k;SL[o.k]=sh(o.a)+"–"+sh(o.b)+" "+o.b.slice(2,4)})}
   return S.raw.map(function(r){
-    var amt=f?-r.amt:r.amt,key=keyOf(r.desc),cat=S.over[key],low=" "+r.desc.toLowerCase()+" ";
-    if(!cat){if(amt<0)cat=PAY;else{cat=OTHER;for(var i=0;i<RULES.length;i++){if(new RegExp(RULES[i][2]).test(low)){cat=RULES[i][0];break}}}}
-    var ex=r.tid!=null&&S.tover[r.tid];return{date:r.date,desc:r.desc,amt:amt,key:key,tid:r.tid,base:cat,ex:!!ex,cat:ex||cat,pk:S.view==="stmt"?st[sid(r)].k:mk(r.date)}})}
+    var amt=f?-r.amt:r.amt,key=keyOf(r.desc),cat=S.over[key],low=" "+r.desc.toLowerCase()+" ";if(cat&&CATS.indexOf(cat)<0)cat=null;
+    if(!cat){if(amt<0)cat=PAY;else{cat=customMatch(low)||OTHER;if(cat===OTHER)for(var i=0;i<RULES.length;i++){if(new RegExp(RULES[i][2]).test(low)){cat=RULES[i][0];break}}}}
+    var ex=r.tid!=null&&S.tover[r.tid];if(ex&&CATS.indexOf(ex)<0)ex=null;return{date:r.date,desc:r.desc,amt:amt,key:key,tid:r.tid,base:cat,ex:!!ex,cat:ex||cat,pk:S.view==="stmt"?st[sid(r)].k:mk(r.date)}})}
 function isSpend(t){return t.cat!==PAY&&t.amt>0}
 function mk(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
 var SL={};
@@ -661,7 +667,7 @@ sb.auth.onAuthStateChange(function(ev,session){
   USER=session?session.user:null;
   if(USER){document.querySelector("main").hidden=false;$("auth").hidden=true;
     if(loadedFor!==USER.id){loadedFor=USER.id;setTimeout(function(){$("sample").hidden=true;loadHistory()},0)}}
-  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};CN={};$("out").hidden=true;$("upsec").hidden=true;$("budsec").hidden=true;$("seg").hidden=true;$("savebar").hidden=true}});
+  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};CN={};CUSTOM=[];rebuildCats();$("out").hidden=true;$("upsec").hidden=true;$("budsec").hidden=true;$("seg").hidden=true;$("savebar").hidden=true}});
 
 async function loadHistory(){
   S.preview=false;$("savebar").hidden=true;$("err").textContent="";
@@ -864,26 +870,48 @@ function fit(el,minW){var n=el.children.length;if(!n)return;var g=parseFloat(get
 [["cats",168],["bcards",260]].forEach(function(x){var el=$(x[0]),f=function(){fit(el,x[1])};el.classList.add("fit");new ResizeObserver(f).observe(el);new MutationObserver(f).observe(el,{childList:true});f()});
 
 
-/* ---------- Rename categories (display names only) ---------- */
-function loadCatNames(){var p=null;try{p=USER&&USER.user_metadata&&USER.user_metadata.cat_names}catch(e){}
-  if(!p||typeof p!=="object"){try{p=JSON.parse(localStorage.getItem("catnames:"+(USER?USER.id:""))||"null")}catch(e){p=null}}
-  CN={};if(p&&typeof p==="object")Object.keys(p).forEach(function(k){if(CATS.indexOf(k)>=0&&typeof p[k]==="string"&&p[k].trim())CN[k]=p[k].trim().slice(0,40)})}
-function saveCatNames(){if(!USER)return;try{localStorage.setItem("catnames:"+USER.id,JSON.stringify(CN))}catch(e){}
-  sb.auth.updateUser({data:{cat_names:CN}}).then(function(r){if(r.error)$("err").textContent="Names saved on this device only: "+r.error.message}).catch(function(){})}
-$("rnbtn").onclick=function(){
-  $("rnbody").innerHTML='<p class="cintro">Rename any category. This only changes the name you see. Your rules, budgets and saved history are not affected. Leave a box empty to use the original name.</p>'+
-    CATS.map(function(c){return'<div class="rnrow"><i style="background:'+COL[c]+'"></i><input type="text" data-c="'+esc(c)+'" value="'+esc(CN[c]||"")+'" placeholder="'+esc(c)+'" maxlength="40" autocomplete="off" aria-label="Name for '+esc(c)+'"></div>'}).join("");
-  $("rnmsg").textContent="";$("rn").showModal()};
+/* ---------- Edit categories: rename and add your own (display names; ids stay stable) ---------- */
+var CPAL=["#5A6FAF","#CA4C40","#E9B847","#5B9C53","#8A5CD0","#17A2B8","#C2417C","#E37400"];
+function loadCatNames(){var md=null,p=null,c=null;try{md=USER&&USER.user_metadata}catch(e){}
+  p=md&&md.cat_names;c=md&&md.cat_custom;var u=USER?USER.id:"";
+  if(!p||typeof p!=="object"){try{p=JSON.parse(localStorage.getItem("catnames:"+u)||"null")}catch(e){p=null}}
+  if(!Array.isArray(c)){try{c=JSON.parse(localStorage.getItem("catcustom:"+u)||"null")}catch(e){c=null}}
+  CUSTOM=(Array.isArray(c)?c:[]).filter(function(x){return x&&typeof x.id==="string"&&/^c_[a-z0-9]+$/.test(x.id)}).slice(0,20).map(function(x){return{id:x.id,col:/^#[0-9a-fA-F]{6}$/.test(x.col)?x.col:CPAL[0],kw:String(x.kw||"").slice(0,200)}});
+  rebuildCats();CN={};
+  if(p&&typeof p==="object")Object.keys(p).forEach(function(k){if(CATS.indexOf(k)>=0&&typeof p[k]==="string"&&p[k].trim())CN[k]=p[k].trim().slice(0,40)})}
+function saveCatNames(){if(!USER)return;try{localStorage.setItem("catnames:"+USER.id,JSON.stringify(CN));localStorage.setItem("catcustom:"+USER.id,JSON.stringify(CUSTOM))}catch(e){}
+  sb.auth.updateUser({data:{cat_names:CN,cat_custom:CUSTOM}}).then(function(r){if(r.error)$("err").textContent="Categories saved on this device only: "+r.error.message}).catch(function(){})}
+var RNX=[];
+function rnSync(){var rows=document.querySelectorAll("#rnbody .rncu");if(!rows.length&&!$("rnbody").dataset.drawn)return;
+  RNX=Array.prototype.map.call(rows,function(r){return{id:r.dataset.id,col:r.querySelector('[data-f="col"]').value,n:r.querySelector('[data-f="n"]').value,kw:r.querySelector('[data-f="kw"]').value}})}
+function rnDraw(){
+  $("rnbody").dataset.drawn="1";
+  $("rnbody").innerHTML='<p class="cintro">Rename any category, or add your own. Names only change what you see, so your saved rules, budgets and history keep working. Leave a built-in box empty to use its original name.</p><h3>Built-in categories</h3>'+
+    CATS.filter(function(c){return c.indexOf("c_")!==0}).map(function(c){return'<div class="rnrow"><i style="background:'+COL[c]+'"></i><input type="text" data-c="'+esc(c)+'" value="'+esc(CN[c]||"")+'" placeholder="'+esc(c)+'" maxlength="40" autocomplete="off" aria-label="Name for '+esc(c)+'"></div>'}).join("")+
+    '<h3>Your own categories</h3><p class="cintro">Add words that appear in the merchant name, separated by commas, and matching transactions go in automatically. Or leave it empty and pick the category yourself in the transactions table.</p>'+
+    RNX.map(function(x){return'<div class="rncu" data-id="'+esc(x.id)+'"><input type="color" data-f="col" value="'+esc(x.col)+'" aria-label="Colour"><input type="text" data-f="n" value="'+esc(x.n)+'" placeholder="Category name" maxlength="40" autocomplete="off" aria-label="Category name"><button type="button" class="cx" data-rm="'+esc(x.id)+'" aria-label="Remove category">'+XICON+'</button><input type="text" class="kw" data-f="kw" value="'+esc(x.kw)+'" placeholder="Matches, e.g. dentist, vet, pets at home" maxlength="200" autocomplete="off" aria-label="Words to match"></div>'}).join("")+
+    '<button class="btn ghost sm" type="button" id="rnadd">Add category</button>'}
+$("rnbtn").onclick=function(){RNX=CUSTOM.map(function(x){return{id:x.id,col:x.col,n:CN[x.id]||"",kw:x.kw}});rnDraw();$("rnmsg").textContent="";$("rn").showModal()};
+$("rnbody").addEventListener("click",function(e){
+  if(e.target.closest("#rnadd")){rnSync();if(RNX.length>=20){$("rnmsg").textContent="That’s the maximum of 20 of your own categories.";return}
+    RNX.push({id:"c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),col:CPAL[RNX.length%CPAL.length],n:"",kw:""});rnDraw();
+    var l=document.querySelectorAll('#rnbody [data-f="n"]');if(l.length){l[l.length-1].focus();l[l.length-1].scrollIntoView({block:"nearest"})}return}
+  var rm=e.target.closest("[data-rm]");if(rm){rnSync();RNX=RNX.filter(function(x){return x.id!==rm.dataset.rm});rnDraw()}});
 $("rnx").onclick=$("rncancel").onclick=function(){$("rn").close()};
-$("rnreset").onclick=function(){document.querySelectorAll("#rnbody input").forEach(function(el){el.value="";el.classList.remove("bad")});$("rnmsg").textContent=""};
+$("rnreset").onclick=function(){rnSync();document.querySelectorAll("#rnbody input[data-c]").forEach(function(el){el.value=""});$("rnmsg").textContent=""};
 $("rnsave").onclick=function(){
-  var N={},seen={},bad=null;
-  document.querySelectorAll("#rnbody input").forEach(function(el){el.classList.remove("bad");var v=el.value.trim().replace(/\s+/g," ");if(v&&v!==el.dataset.c)N[el.dataset.c]=v});
-  CATS.forEach(function(c){var k=(N[c]||c).toLowerCase();if(seen[k]&&!bad)bad=[c,seen[k]];seen[k]=c});
-  if(bad){bad.forEach(function(c){var el=document.querySelector('#rnbody input[data-c="'+c.replace(/"/g,'\\"')+'"]');if(el)el.classList.add("bad")});
-    $("rnmsg").textContent="Two categories can’t have the same name. Change the ones outlined.";return}
-  CN=N;saveCatNames();$("rn").close();
-  if(S.raw.length)render();if(!$("bform").hidden&&E)drawEditor()};
+  rnSync();var N={},seen={},bad=[],cu=[];
+  document.querySelectorAll("#rnbody input").forEach(function(el){el.classList.remove("bad")});
+  document.querySelectorAll("#rnbody input[data-c]").forEach(function(el){var v=el.value.trim().replace(/\s+/g," ");if(v&&v!==el.dataset.c)N[el.dataset.c]=v});
+  RNX.forEach(function(x){var v=x.n.trim().replace(/\s+/g," ");cu.push({id:x.id,col:/^#[0-9a-fA-F]{6}$/.test(x.col)?x.col:CPAL[0],kw:x.kw.trim()});if(v)N[x.id]=v});
+  var names=[];BASECATS.concat(cu.map(function(x){return x.id}),[OTHER,PAY]).forEach(function(c){names.push([c,N[c]||c])});
+  names.forEach(function(p){var k=p[1].toLowerCase();if(seen[k]){bad.push(p[0],seen[k])}seen[k]=p[0]});
+  cu.forEach(function(x){if(!N[x.id])bad.push(x.id)});
+  if(bad.length){
+    bad.forEach(function(c){var el=c.indexOf("c_")===0?document.querySelector('#rnbody .rncu[data-id="'+c+'"] [data-f="n"]'):document.querySelector('#rnbody input[data-c="'+c.replace(/"/g,'\\"')+'"]');if(el)el.classList.add("bad")});
+    $("rnmsg").textContent="Every category needs its own name. Fix the outlined boxes.";return}
+  CUSTOM=cu;rebuildCats();CN=N;saveCatNames();$("rn").close();
+  if(S.raw.length)render();if(!$("bform").hidden&&E)openEditor()};
 
 /* ---------- Collapsible sections ---------- */
 var UNITS=[],COLL={},OPEN0=["Budgets","Your statements","Spending by category"];try{COLL=JSON.parse(localStorage.getItem("collapsed2")||"{}")||{}}catch(e){}
