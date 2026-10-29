@@ -317,6 +317,15 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 #bform input[type=checkbox]{width:20px;height:20px;min-height:0;max-width:none;accent-color:var(--accent)}
 .ccomb{width:180px!important;min-height:32px!important;padding:4px 12px!important}
 .oa{margin-top:32px}.catlist{display:block;color:var(--muted);font-size:13px;line-height:1.3;font-weight:400}
+#rn{width:min(520px,calc(100% - 32px));max-height:min(90vh,800px);padding:0;border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+#rn[open]{display:flex;flex-direction:column}
+#rn::backdrop{background:rgba(32,33,36,.6)}
+#rnbody{flex:1 1 auto;overflow:auto;padding:0 24px 8px}
+.rnrow{display:grid;grid-template-columns:16px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:8px}
+.rnrow i{display:block;width:16px;height:16px;border-radius:4px}
+#rn input[type=text]{width:100%;min-height:40px;padding:8px 12px;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px}
+#rn input.bad{border-color:#d93025}
+@media(max-width:600px){#rn .chead,#rnbody,#rn .cfoot{padding-left:16px;padding-right:16px}}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -353,6 +362,7 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
     <div class="grid"><div id="donut"></div><div id="cats"></div></div>
     <div class="unusual" id="unusual" hidden></div>
     <p class="note">Select a category to filter the transactions below. Wrong category? Change it in the table, then choose whether it applies to every transaction from that merchant or just that one.</p>
+    <div class="bar" style="margin-top:16px"><button class="btn ghost" id="rnbtn" type="button"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Rename categories</span></button></div>
   </section>
 
   <section class="panel">
@@ -395,6 +405,11 @@ h2.is-collapsed,.top.is-collapsed h2,#budsec .top.is-collapsed h2{margin-bottom:
 </div>
 <section class="panel" id="upsec" hidden><h2>Your statements</h2><div class="tw"><table><thead><tr><th>Uploaded</th><th>File</th><th>Period</th><th class="n">Rows in file</th><th class="n">New rows saved</th></tr></thead><tbody id="uprows"></tbody></table></div></section>
 </main>
+<dialog id="rn" aria-labelledby="rnh">
+<div class="chead"><h2 id="rnh">Rename categories</h2><button class="cx" id="rnx" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
+<div id="rnbody"></div>
+<div class="cfoot"><p class="note" id="rnmsg" role="alert" style="margin:0 0 12px"></p><div class="cbtns"><button class="btn ghost" id="rnreset" type="button">Reset all</button><span class="sp"></span><button class="btn ghost" id="rncancel" type="button">Cancel</button><button class="btn" id="rnsave" type="button">Save</button></div></div>
+</dialog>
 <dialog id="calc" aria-labelledby="calch">
 <div class="chead"><h2 id="calch">Calculate budget</h2><button class="cx" id="calcx" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
 <div id="calcbody"></div>
@@ -422,6 +437,7 @@ var COL={};RULES.forEach(function(r){COL[r[0]]=r[1]});Object.assign(COL,{"Eating
 function ink(h){var n=parseInt(h.slice(1),16),l=.299*(n>>16)+.587*(n>>8&255)+.114*(n&255);return l>150?"#202124":"#fff"}
 var S={raw:[],flip:false,over:{},tover:{},pend:null,fc:null,fm:null,q:"",all:false,auto:false};
 var $=function(i){return document.getElementById(i)};
+var CN={};function dn(c){return CN[c]||c}
 var gbp=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
 var gbp0=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP",maximumFractionDigits:0});
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -506,18 +522,18 @@ function render(){
     var k=t.key||t.desc;mer[k]=mer[k]||{n:0,s:0};mer[k].n++;mer[k].s+=t.amt});
   var cl=Object.keys(by).sort(function(a,b){return by[b]-by[a]}),ms=Object.keys(mon).sort();
   var maxT=sp.length?Math.max.apply(null,sp.map(function(t){return t.amt})):0;
-  $("stats").innerHTML=[["Transactions",sp.length],[S.view==="stmt"?"Statement average":"Monthly average",gbp0.format(total/Math.max(ms.length,1))],["Largest purchase",gbp0.format(maxT)],["Top category",cl[0]||"–"]]
+  $("stats").innerHTML=[["Transactions",sp.length],[S.view==="stmt"?"Statement average":"Monthly average",gbp0.format(total/Math.max(ms.length,1))],["Largest purchase",gbp0.format(maxT)],["Top category",cl[0]?dn(cl[0]):"–"]]
     .map(function(x){return"<div>"+x[0]+"<strong>"+esc(x[1])+"</strong></div>"}).join("");
 
   var R=70,C=2*Math.PI*R,acc=0,seg="";
-  cl.forEach(function(c){var s=by[c]/total*C;seg+='<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+COL[c]+'" stroke-width="30" stroke-dasharray="'+Math.max(s-1.5,0.5)+" "+(C-Math.max(s-1.5,0.5))+'" stroke-dashoffset="'+(-acc)+'" transform="rotate(-90 100 100)"><title>'+esc(c)+" "+gbp0.format(by[c])+"</title></circle>";acc+=s});
+  cl.forEach(function(c){var s=by[c]/total*C;seg+='<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+COL[c]+'" stroke-width="30" stroke-dasharray="'+Math.max(s-1.5,0.5)+" "+(C-Math.max(s-1.5,0.5))+'" stroke-dashoffset="'+(-acc)+'" transform="rotate(-90 100 100)"><title>'+esc(dn(c))+" "+gbp0.format(by[c])+"</title></circle>";acc+=s});
   $("donut").innerHTML='<svg class="donut" viewBox="0 0 200 200" role="img" aria-label="Spending by category">'+(seg||"")+'<text x="100" y="97" text-anchor="middle" font-size="12" fill="var(--muted)">Total</text><text x="100" y="118" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">'+gbp0.format(total)+"</text></svg>";
   U=unusual(mon,ms,cl);
-  $("cats").innerHTML=cl.map(function(c){return'<div class="tile'+(S.fc===c?" on":"")+'" style="background:'+COL[c]+";color:"+ink(COL[c])+'" role="button" tabindex="0" data-cat="'+esc(c)+'"><span>'+esc(c)+"</span><span><strong>"+gbp0.format(by[c])+"</strong><br><small>"+(by[c]/total*100).toFixed(1)+"% of spend</small>"+uflag(c)+"</span></div>"}).join("")||'<p class="note">No spending found.</p>';
+  $("cats").innerHTML=cl.map(function(c){return'<div class="tile'+(S.fc===c?" on":"")+'" style="background:'+COL[c]+";color:"+ink(COL[c])+'" role="button" tabindex="0" data-cat="'+esc(c)+'"><span>'+esc(dn(c))+"</span><span><strong>"+gbp0.format(by[c])+"</strong><br><small>"+(by[c]/total*100).toFixed(1)+"% of spend</small>"+uflag(c)+"</span></div>"}).join("")||'<p class="note">No spending found.</p>';
 
   var mx=Math.max.apply(null,ms.map(function(m){return Object.keys(mon[m]).reduce(function(a,c){return a+mon[m][c]},0)}).concat([1]));
   $("months").innerHTML=ms.map(function(m){var tot=0,segs="";
-    cl.forEach(function(c){var v=mon[m][c]||0;tot+=v;if(v)segs+='<i title="'+esc(c)+" "+gbp0.format(v)+'" style="height:'+(v/mx*130)+"px;background:"+COL[c]+'"></i>'});
+    cl.forEach(function(c){var v=mon[m][c]||0;tot+=v;if(v)segs+='<i title="'+esc(dn(c))+" "+gbp0.format(v)+'" style="height:'+(v/mx*130)+"px;background:"+COL[c]+'"></i>'});
     return'<div class="m'+(S.fm===m?" on":"")+'" role="button" tabindex="0" data-m="'+m+'"><em>'+gbp0.format(tot)+'</em><div class="stack">'+segs+"</div>"+mlabel(m)+"</div>"}).join("");
 
   unusualBox(ms);subsView();
@@ -537,10 +553,10 @@ function monthly(mon,ms,cl,sp){
   $("mt").innerHTML=ms.map(function(m,i){
     var top=cl.slice().sort(function(a,b){return(mon[m][b]||0)-(mon[m][a]||0)})[0],ch="–";
     if(i>0&&tot[i-1]>0){var d=tot[i]-tot[i-1];ch='<span class="'+(d>0?"up":"dn")+'">'+(d>0?"▲ +":"▼ −")+gbp0.format(Math.abs(d))+" ("+Math.abs(d/tot[i-1]*100).toFixed(0)+"%)</span>"}
-    return'<tr class="mrow'+(S.fm===m?" on":"")+'" role="button" tabindex="0" data-m="'+m+'"><td>'+mlabel(m)+'</td><td class="n">'+gbp0.format(tot[i])+'</td><td class="n">'+ch+'</td><td class="n dn">'+(pm[m]?"−"+gbp0.format(pm[m]):"–")+'</td><td class="n">'+gbp0.format(tot[i]-(pm[m]||0))+'</td><td class="n">'+cnt[m]+'</td><td>'+esc(top)+' <small class="note">'+gbp0.format(mon[m][top]||0)+"</small></td></tr>"}).join("");
+    return'<tr class="mrow'+(S.fm===m?" on":"")+'" role="button" tabindex="0" data-m="'+m+'"><td>'+mlabel(m)+'</td><td class="n">'+gbp0.format(tot[i])+'</td><td class="n">'+ch+'</td><td class="n dn">'+(pm[m]?"−"+gbp0.format(pm[m]):"–")+'</td><td class="n">'+gbp0.format(tot[i]-(pm[m]||0))+'</td><td class="n">'+cnt[m]+'</td><td>'+esc(dn(top))+' <small class="note">'+gbp0.format(mon[m][top]||0)+"</small></td></tr>"}).join("");
   var mx=0;cl.forEach(function(c){ms.forEach(function(m){mx=Math.max(mx,mon[m][c]||0)})});
   $("heat").innerHTML='<thead><tr><th>Category</th>'+ms.map(function(m){return'<th class="n">'+mlabel(m)+"</th>"}).join("")+'<th class="n">Total</th></tr></thead><tbody>'+cl.map(function(c){var s=0,cells=ms.map(function(m){var v=mon[m][c]||0;s+=v;return'<td class="n"'+(v?' style="background:color-mix(in srgb,var(--accent) '+Math.round(v/mx*40)+'%,transparent)"':"")+">"+(v?gbp0.format(v):"–")+"</td>"}).join("");
-    return'<tr><td class="c"><i class="dot" style="display:inline-block;margin-right:8px;background:'+COL[c]+'"></i>'+esc(c)+"</td>"+cells+'<td class="n"><strong>'+gbp0.format(s)+"</strong></td></tr>"}).join("")+"</tbody>"}
+    return'<tr><td class="c"><i class="dot" style="display:inline-block;margin-right:8px;background:'+COL[c]+'"></i>'+esc(dn(c))+"</td>"+cells+'<td class="n"><strong>'+gbp0.format(s)+"</strong></td></tr>"}).join("")+"</tbody>"}
 
 function exportXlsx(){
   var msg=$('xmsg');msg.textContent='';
@@ -559,15 +575,15 @@ function exportXlsx(){
     var r=XLSX.utils.decode_range(ws['!ref']);
     for(var R=0;R<=r.e.r;R++)for(var C=0;C<=r.e.c;C++){var c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&(c.t==='n'||c.t==='d')&&fm[C])c.z=fm[C]}
     XLSX.utils.book_append_sheet(wb,ws,name);return ws}
-  var s1=[['Period',$('range').textContent.replace('Spent between ','')],['Total spent',total],['Payments and credits',paid],['Left to pay (spent minus paid off)',total-paid],['Transactions',sp.length],['Monthly average',total/Math.max(Object.keys(mon).length,1)],['Largest purchase',mx],[],['Category','Spent','% of spend']].concat(cl.map(function(c){return[c,by[c],total?by[c]/total:0]}));
+  var s1=[['Period',$('range').textContent.replace('Spent between ','')],['Total spent',total],['Payments and credits',paid],['Left to pay (spent minus paid off)',total-paid],['Transactions',sp.length],['Monthly average',total/Math.max(Object.keys(mon).length,1)],['Largest purchase',mx],[],['Category','Spent','% of spend']].concat(cl.map(function(c){return[dn(c),by[c],total?by[c]/total:0]}));
   var w1=sheet('Summary',s1,[36,24,12],{1:Z,2:'0.0%'});w1['B5'].z='0';
   var s2=[[S.view==='stmt'?'Statement':'Month','Spent','Paid off','Left to pay','Change on previous month','Change %','Transactions','Top category']].concat(ms.map(function(m,i){var s=mt(m),prev=i?mt(ms[i-1]):0,o=mon[m]||{},top=cl.slice().sort(function(a,b){return(o[b]||0)-(o[a]||0)})[0];
-    return[mlabel(m),s,pm[m]||0,s-(pm[m]||0),i?s-prev:null,i&&prev>0?(s-prev)/prev:null,cnt[m]||0,s?top:null]}));
+    return[mlabel(m),s,pm[m]||0,s-(pm[m]||0),i?s-prev:null,i&&prev>0?(s-prev)/prev:null,cnt[m]||0,s?dn(top):null]}));
   sheet(S.view==='stmt'?'By statement':'Month by month',s2,[12,14,14,14,24,12,14,22],{1:Z,2:Z,3:Z,4:Z,5:'0.0%',6:'0'});
-  var s3=[['Category'].concat(ms.map(function(m){return mlabel(m)}),['Total'])].concat(cl.map(function(c){return[c].concat(ms.map(function(m){return(mon[m]||{})[c]||0}),[by[c]])})),fm3={};
+  var s3=[['Category'].concat(ms.map(function(m){return mlabel(m)}),['Total'])].concat(cl.map(function(c){return[dn(c)].concat(ms.map(function(m){return(mon[m]||{})[c]||0}),[by[c]])})),fm3={};
   for(var k=1;k<=ms.length+1;k++)fm3[k]=Z;
   sheet(S.view==='stmt'?'Category by statement':'Category by month',s3,[22].concat(ms.map(function(){return 12}),[14]),fm3);
-  var s4=[['Date','Description','Category','Amount']].concat(T.slice().sort(function(a,b){return b.date-a.date}).map(function(t){return[t.date,t.desc,t.cat,t.amt]}));
+  var s4=[['Date','Description','Category','Amount']].concat(T.slice().sort(function(a,b){return b.date-a.date}).map(function(t){return[t.date,t.desc,dn(t.cat),t.amt]}));
   var w4=sheet('Transactions',s4,[14,48,20,14],{0:'dd mmm yyyy',3:Z});w4['!autofilter']={ref:w4['!ref']};
   var fn='Amex-spending-'+new Date().toISOString().slice(0,10)+'.xlsx',out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   if(window.claude&&claude.use){
@@ -580,7 +596,7 @@ function rows(){
   var q=S.q.toLowerCase(),L=T.filter(function(t){return(!S.fc||t.cat===S.fc)&&(!S.fm||t.pk===S.fm)&&(!q||t.desc.toLowerCase().indexOf(q)>-1)}).sort(function(a,b){return b.date-a.date});
   var show=S.all?L:L.slice(0,100);
   $("rows").innerHTML=show.map(function(t){return"<tr><td class='d'>"+t.date.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"})+"</td><td>"+esc(t.desc)+"</td><td>"+catCell(t)+"</td><td class='n"+(t.amt<0?" cr":"")+"'>"+(t.amt<0?"+":"")+gbp.format(Math.abs(t.amt))+"</td></tr>"}).join("");
-  $("count").textContent="Showing "+show.length+" of "+L.length+(S.fc?" in "+S.fc:"")+(S.fm?" for "+mlabel(S.fm):"");
+  $("count").textContent="Showing "+show.length+" of "+L.length+(S.fc?" in "+dn(S.fc):"")+(S.fm?" for "+mlabel(S.fm):"");
   $("more").hidden=S.all||L.length<=100}
 
 function act(e){var c=e.target.closest("[data-cat]"),m=e.target.closest("[data-m]");
@@ -596,7 +612,7 @@ function setCat(tid,key,cat,one){S.pend=null;
   else{S.over[key]=cat;saveRule(key,cat);if(S.tover[tid]){delete S.tover[tid];saveRule("txn:"+tid,null)}}
   render()}
 function catCell(t){var p=S.pend&&S.pend.tid===t.tid?S.pend:null,sc=p?p.cat:t.cat,
-  h='<select data-tid="'+esc(t.tid)+'" data-key="'+esc(t.key)+'" aria-label="Category">'+CATS.map(function(c){return"<option"+(c===sc?" selected":"")+">"+esc(c)+"</option>"}).join("")+"</select>";
+  h='<select data-tid="'+esc(t.tid)+'" data-key="'+esc(t.key)+'" aria-label="Category">'+CATS.map(function(c){return'<option value="'+esc(c)+'"'+(c===sc?" selected":"")+">"+esc(dn(c))+"</option>"}).join("")+"</select>";
   if(p)h+='<div class="pend"><button class="btn ghost sm" type="button" data-p="all">All '+p.n+' from this merchant</button><button class="btn sm" type="button" data-p="one">Just this one</button><button class="btn ghost sm" type="button" data-p="x">Cancel</button></div>';
   else if(t.ex)h+='<div class="pend"><span class="pill warn">Just this one</span><button class="btn ghost sm" type="button" data-reset="'+esc(t.tid)+'">Reset</button></div>';
   return h}
@@ -645,7 +661,7 @@ sb.auth.onAuthStateChange(function(ev,session){
   USER=session?session.user:null;
   if(USER){document.querySelector("main").hidden=false;$("auth").hidden=true;
     if(loadedFor!==USER.id){loadedFor=USER.id;setTimeout(function(){$("sample").hidden=true;loadHistory()},0)}}
-  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};$("out").hidden=true;$("upsec").hidden=true;$("budsec").hidden=true;$("seg").hidden=true;$("savebar").hidden=true}});
+  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};CN={};$("out").hidden=true;$("upsec").hidden=true;$("budsec").hidden=true;$("seg").hidden=true;$("savebar").hidden=true}});
 
 async function loadHistory(){
   S.preview=false;$("savebar").hidden=true;$("err").textContent="";
@@ -655,7 +671,7 @@ async function loadHistory(){
     all=all.concat(r.data);if(r.data.length<step)break;from+=step}
   var rl=await sb.from("category_rules").select("key,category");
   S.over={};S.tover={};S.pend=null;(rl.data||[]).forEach(function(x){if(x.key.indexOf("txn:")===0)S.tover[x.key.slice(4)]=x.category;else S.over[x.key]=x.category});
-  await loadBudgets();
+  await loadBudgets();loadCatNames();
   loadUploads();
   if(!all.length){$("out").hidden=true;$("budsec").hidden=true;$("seg").hidden=true;$("fname").textContent="No saved transactions yet. Upload your first CSV above.";return}
   S.raw=all.map(function(x){var p=x.txn_date.split("-");return{date:new Date(+p[0],p[1]-1,+p[2]),desc:x.description,amt:Number(x.amount),sid:x.upload_id||"none",tid:String(x.id)}});
@@ -706,7 +722,7 @@ function unusualBox(ms){var el=$("unusual"),k=Object.keys(U);
   if(!k.length){el.hidden=true;el.innerHTML="";return}
   k.sort(function(a,b){return(U[b].v-U[b].avg)-(U[a].v-U[a].avg)});
   el.innerHTML="<h3>Higher than usual in "+esc(mlabel(ms[ms.length-1]))+"</h3>"+k.map(function(c){var u=U[c];
-    return'<div class="urow"><span>'+esc(c)+"</span><span>"+gbp0.format(u.v)+(u.avg?" against a usual "+gbp0.format(u.avg):" and nothing like it before")+"</span></div>"}).join("")+
+    return'<div class="urow"><span>'+esc(dn(c))+"</span><span>"+gbp0.format(u.v)+(u.avg?" against a usual "+gbp0.format(u.avg):" and nothing like it before")+"</span></div>"}).join("")+
     '<p class="note" style="margin:8px 0 0">Compared with your earlier periods. The latest period may be only part of a month, so a flag here means it is already high.</p>';
   el.hidden=false}
 
@@ -735,7 +751,7 @@ function subsView(){
     if(x.stale)notes.push('<span class="pill dim">Not charged since '+d(x.last)+"</span>");
     if(x.prev!=null)notes.push('<span class="pill warn">'+(x.amt>x.prev?"Price up":"Price down")+" from "+gbp.format(x.prev)+"</span>");
     if(x.n===2)notes.push('<span class="pill">Only 2 charges so far</span>');
-    return"<tr"+(x.stale?' style="opacity:.6"':"")+"><td>"+esc(x.name)+" <small class=\"note\">"+x.n+"×</small></td><td>"+esc(x.cat)+'</td><td class="n">'+gbp.format(x.amt)+'</td><td class="n">'+gbp0.format(x.amt*12)+"</td><td class=\"d\">"+d(x.last)+'</td><td class="d">'+(x.stale?"–":d(x.next))+"</td><td>"+notes.join(" ")+"</td></tr>"}).join("")||'<tr><td colspan="7" class="note">No regular monthly payments found yet. Upload at least two months of statements.</td></tr>';
+    return"<tr"+(x.stale?' style="opacity:.6"':"")+"><td>"+esc(x.name)+" <small class=\"note\">"+x.n+"×</small></td><td>"+esc(dn(x.cat))+'</td><td class="n">'+gbp.format(x.amt)+'</td><td class="n">'+gbp0.format(x.amt*12)+"</td><td class=\"d\">"+d(x.last)+'</td><td class="d">'+(x.stale?"–":d(x.next))+"</td><td>"+notes.join(" ")+"</td></tr>"}).join("")||'<tr><td colspan="7" class="note">No regular monthly payments found yet. Upload at least two months of statements.</td></tr>';
   $("subnote").textContent=L.length?"Found by looking for the same merchant charged about once a month for a similar amount. Counted in the totals: payments charged in the last 45 days of your data.":""}
 
 /* ---------- Budget groups ---------- */
@@ -772,7 +788,7 @@ function budgets(sp,ms){
   if(tb)cards.push(bcard("All budgeted groups",ts,tb,"blue"));
   $("bcards").innerHTML=cards.join("");offAmex();
   $("btab").innerHTML='<thead><tr><th>Group</th><th class="n">Budget</th><th class="n">Average</th>'+ms.map(function(m){return'<th class="n">'+mlabel(m)+"</th>"}).join("")+"</tr></thead><tbody>"+
-    G.groups.map(function(g){return"<tr><td>"+esc(g.name)+'<span class="catlist">'+esc(bcats().filter(function(c){return groupOf(c).id===g.id}).join(", "))+'</span></td><td class="n">'+(g.budget?gbp0.format(g.budget):"–")+'</td><td class="n">'+(function(){var a=ms.reduce(function(q,m){return q+((by[m]||{})[g.id]||0)},0)/ms.length;return a?gbp0.format(a):"–"})()+"</td>"+ms.map(function(m){var s=(by[m]||{})[g.id]||0,o=g.budget&&s>g.budget;return'<td class="n'+(o?" ovr up":"")+'">'+(s?gbp0.format(s):"–")+"</td>"}).join("")+"</tr>"}).join("")+"</tbody>"}
+    G.groups.map(function(g){return"<tr><td>"+esc(g.name)+'<span class="catlist">'+esc(bcats().filter(function(c){return groupOf(c).id===g.id}).map(dn).join(", "))+'</span></td><td class="n">'+(g.budget?gbp0.format(g.budget):"–")+'</td><td class="n">'+(function(){var a=ms.reduce(function(q,m){return q+((by[m]||{})[g.id]||0)},0)/ms.length;return a?gbp0.format(a):"–"})()+"</td>"+ms.map(function(m){var s=(by[m]||{})[g.id]||0,o=g.budget&&s>g.budget;return'<td class="n'+(o?" ovr up":"")+'">'+(s?gbp0.format(s):"–")+"</td>"}).join("")+"</tr>"}).join("")+"</tbody>"}
 
 var APPLIED=null;
 function offAmex(){var el=$("offamex"),P=APPLIED||loadPlan(),Tt=totals(P);
@@ -791,7 +807,7 @@ function drawEditor(){
   $("bform").innerHTML='<div class="tw"><table><thead><tr><th>Group</th><th class="n">Monthly budget (£)</th><th>Colour</th><th>Everything else</th><th>Merge</th><th></th></tr></thead><tbody>'+
     E.groups.map(function(g,i){return'<tr><td><input data-e="name" data-i="'+i+'" maxlength="40" value="'+esc(g.name)+'" aria-label="Group name"></td><td class="n"><input data-e="budget" data-i="'+i+'" type="number" min="0" step="1" value="'+(g.budget||"")+'" aria-label="Monthly budget"></td><td><div class="sw" role="radiogroup" aria-label="Colour for '+esc(g.name)+'">'+Object.keys(PAL).map(function(k){return'<label title="'+PAL[k][0]+'"><input type="radio" name="col'+i+'" data-e="color" data-i="'+i+'" value="'+k+'"'+((g.color||"blue")===k?" checked":"")+' aria-label="'+PAL[k][0]+'"><i style="--m:'+PAL[k][1]+';--k:'+(k==="yellow"?"#202124":"#fff")+'"></i></label>'}).join("")+'</div></td><td><input type="radio" name="ca" data-e="ca" data-i="'+i+'"'+(g.catch_all?" checked":"")+' aria-label="Catch-all group"></td><td><input type="checkbox" data-e="mg" data-i="'+i+'"'+(E.sel&&E.sel[i]?" checked":"")+' aria-label="Tick to merge '+esc(g.name)+'"></td><td>'+(E.groups.length>1?'<button class="btn ghost" type="button" data-e="del" data-i="'+i+'">Remove</button>':"")+"</td></tr>"}).join("")+
     '</tbody></table></div><div class="bar"><button class="btn ghost" id="badd" type="button">Add group</button><button class="btn ghost" id="bmerge" type="button">Merge ticked groups</button><span class="note">The “everything else” group collects any category you don’t place yourself.</span></div><h3>Put each category in a group</h3><div class="bcats">'+
-    bcats().map(function(c){return"<label>"+esc(c)+'<select data-e="cat" data-c="'+esc(c)+'">'+opts(E.map[c])+"</select></label>"}).join("")+
+    bcats().map(function(c){return"<label>"+esc(dn(c))+'<select data-e="cat" data-c="'+esc(c)+'">'+opts(E.map[c])+"</select></label>"}).join("")+
     '</div><div class="bar"><button class="btn" id="bsave" type="button">Save</button><button class="btn ghost" id="bcancel" type="button">Cancel</button><span class="note" id="bmsg"></span></div>'}
 
 $("bedit").onclick=function(){if($("bform").hidden)openEditor();else $("bform").hidden=true};
@@ -846,6 +862,28 @@ $("seg").onclick=function(e){var b=e.target.closest("button");if(b)setView(b.dat
 setView(S.view,false);
 function fit(el,minW){var n=el.children.length;if(!n)return;var g=parseFloat(getComputedStyle(el).columnGap)||12,m=Math.max(1,Math.floor((el.clientWidth+g)/(minW+g))),rows=Math.ceil(n/m);el.style.setProperty("--cols",Math.ceil(n/rows))}
 [["cats",168],["bcards",260]].forEach(function(x){var el=$(x[0]),f=function(){fit(el,x[1])};el.classList.add("fit");new ResizeObserver(f).observe(el);new MutationObserver(f).observe(el,{childList:true});f()});
+
+
+/* ---------- Rename categories (display names only) ---------- */
+function loadCatNames(){var p=null;try{p=USER&&USER.user_metadata&&USER.user_metadata.cat_names}catch(e){}
+  if(!p||typeof p!=="object"){try{p=JSON.parse(localStorage.getItem("catnames:"+(USER?USER.id:""))||"null")}catch(e){p=null}}
+  CN={};if(p&&typeof p==="object")Object.keys(p).forEach(function(k){if(CATS.indexOf(k)>=0&&typeof p[k]==="string"&&p[k].trim())CN[k]=p[k].trim().slice(0,40)})}
+function saveCatNames(){if(!USER)return;try{localStorage.setItem("catnames:"+USER.id,JSON.stringify(CN))}catch(e){}
+  sb.auth.updateUser({data:{cat_names:CN}}).then(function(r){if(r.error)$("err").textContent="Names saved on this device only: "+r.error.message}).catch(function(){})}
+$("rnbtn").onclick=function(){
+  $("rnbody").innerHTML='<p class="cintro">Rename any category. This only changes the name you see. Your rules, budgets and saved history are not affected. Leave a box empty to use the original name.</p>'+
+    CATS.map(function(c){return'<div class="rnrow"><i style="background:'+COL[c]+'"></i><input type="text" data-c="'+esc(c)+'" value="'+esc(CN[c]||"")+'" placeholder="'+esc(c)+'" maxlength="40" autocomplete="off" aria-label="Name for '+esc(c)+'"></div>'}).join("");
+  $("rnmsg").textContent="";$("rn").showModal()};
+$("rnx").onclick=$("rncancel").onclick=function(){$("rn").close()};
+$("rnreset").onclick=function(){document.querySelectorAll("#rnbody input").forEach(function(el){el.value="";el.classList.remove("bad")});$("rnmsg").textContent=""};
+$("rnsave").onclick=function(){
+  var N={},seen={},bad=null;
+  document.querySelectorAll("#rnbody input").forEach(function(el){el.classList.remove("bad");var v=el.value.trim().replace(/\s+/g," ");if(v&&v!==el.dataset.c)N[el.dataset.c]=v});
+  CATS.forEach(function(c){var k=(N[c]||c).toLowerCase();if(seen[k]&&!bad)bad=[c,seen[k]];seen[k]=c});
+  if(bad){bad.forEach(function(c){var el=document.querySelector('#rnbody input[data-c="'+c.replace(/"/g,'\\"')+'"]');if(el)el.classList.add("bad")});
+    $("rnmsg").textContent="Two categories can’t have the same name. Change the ones outlined.";return}
+  CN=N;saveCatNames();$("rn").close();
+  if(S.raw.length)render();if(!$("bform").hidden&&E)drawEditor()};
 
 /* ---------- Collapsible sections ---------- */
 var UNITS=[],COLL={},OPEN0=["Budgets","Your statements","Spending by category"];try{COLL=JSON.parse(localStorage.getItem("collapsed2")||"{}")||{}}catch(e){}
