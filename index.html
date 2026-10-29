@@ -201,15 +201,48 @@ main{max-width:none;padding:40px clamp(16px,4vw,64px) 112px}
 .drop span{font-size:15px;color:var(--muted)}
 #savebar{position:sticky;top:0;z-index:5;margin:16px 0 24px;padding:12px 0;background:var(--bg);border-bottom:1px solid var(--line)}
 #upsec{border-top:0;padding:24px 0 8px}
+/* budget cards: ring progress, Google One storage style */
+#budsec{border-top:0;padding-top:24px}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;margin-bottom:16px}
+.bcard{display:flex;flex-direction:column;align-items:center;border:1px solid var(--line);border-radius:16px;padding:20px 24px 24px}
+.bcard h4{align-self:flex-start;margin:0 0 16px;font-size:20px;line-height:1.2;font-weight:500;letter-spacing:-.01em}
+.ring{position:relative;width:168px;height:168px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .tr{stroke:#e8eaed}.ring .pr{stroke:#3b78e7}
+:root[data-theme="dark"] .ring .tr{stroke:#3c4043}
+:root[data-theme="dark"] .ring .pr{stroke:#8ab4f8}
+.bcard.warn .pr{stroke:#f9ab00!important}.bcard.over .pr{stroke:#d93025!important}
+:root[data-theme="dark"] .bcard.over .pr{stroke:#f28b82!important}
+.ringtxt{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ringtxt b{font-size:44px;line-height:1;font-weight:400;letter-spacing:-.02em}
+.ringtxt b small{font-size:24px;font-weight:400}
+.ringtxt span{margin-top:8px;font-size:20px;line-height:1.1;font-weight:500}
+.bcard .cap{margin-top:20px;font-size:15px;line-height:1.4;color:var(--muted);text-align:center}
+/* font, top spacing, single divider, flexible tile rows */
+:root{--sans:"open-sans",-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Roboto,Arial,sans-serif}
+body{letter-spacing:-.011em}
+main{padding-top:clamp(56px,10vh,112px)}
+.top{margin-bottom:16px;align-items:center}
+.sub{margin-bottom:48px}
+#drop{display:none!important}
+#upbtn svg,#upbtn i{margin-right:8px;height:1em}
+#savebar{border-bottom:0;padding:12px 0}
+#cats.fit,#bcards.fit{display:flex;flex-wrap:wrap}
+#cats.fit{gap:12px;--gap:12px}
+#bcards.fit{gap:24px;--gap:24px}
+.fit>*{flex:1 1 calc((100% - (var(--cols,1) - 1)*var(--gap,12px))/var(--cols,1));min-width:0}
+@media(max-width:600px){#upbtn span{display:none}#upbtn svg,#upbtn i{margin-right:0}}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://use.typekit.net/mdx1emh.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
 </head>
 <body>
 <div id="auth"><form id="authform" class="authcard"><h1>Amex spending analyser</h1><p class="note">Sign in to see your saved history.</p><label>Email<input id="em" type="email" autocomplete="username" required></label><label>Password<input id="pw" type="password" autocomplete="current-password" minlength="12" required></label><div class="err" id="amsg" role="alert"></div><button class="btn" type="submit">Sign in</button><button class="btn ghost" id="signup" type="button">Create account</button></form></div>
 <main hidden>
-<div class="top"><h1>Amex spending analyser</h1><div class="who"><span class="note" id="who"></span><button class="btn ghost" id="signout" type="button">Sign out</button><button class="icon" id="theme" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><svg class="ic-moon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg><svg class="ic-sun" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg></button></div></div>
+<div class="top"><h1>Amex spending analyser</h1><div class="who"><button class="btn" id="upbtn" type="button" aria-label="Upload statement"><i class="fa-solid fa-upload" aria-hidden="true"></i><span>Upload statement</span></button><button class="btn ghost" id="signout" type="button">Sign out</button><button class="icon" id="theme" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><svg class="ic-moon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg><svg class="ic-sun" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg></button></div></div>
 <p class="sub">Upload the CSV from your Amex account each month. Your transactions are saved to your private account, so your history and month-by-month analysis build up over time.</p>
 
 <label class="drop" id="drop">
@@ -261,7 +294,7 @@ main{max-width:none;padding:40px clamp(16px,4vw,64px) 112px}
 <section class="panel" id="budsec"><div class="top"><h2>Budgets</h2><button class="btn ghost" id="bedit" type="button">Edit groups and budgets</button></div>
 <div id="bform" hidden></div>
 <div class="tools"><label class="note" for="bm">Month</label><select id="bm"></select></div>
-<div id="bcards"></div>
+<div id="bcards" class="bgrid"></div>
 <h3>Month by month against budget</h3>
 <div class="tw"><table id="btab"></table></div>
 <p class="note">Groups only change how spending is added up for budgets. Your categories and charts above stay exactly as they are. The first and last months in your data may be partial.</p></section>
@@ -458,7 +491,9 @@ $("clear").onclick=function(){S.fc=S.fm=null;S.q="";$("q").value="";S.all=false;
 $("more").onclick=function(){S.all=true;rows()};
 
 function readFile(f){if(!f)return;var r=new FileReader();r.onload=function(){load(r.result,f.name)};r.readAsText(f)}
-$("file").onchange=function(){readFile(this.files[0])};
+$("file").onchange=function(){readFile(this.files[0]);this.value=""};
+$("upbtn").onclick=function(){$("file").click()};
+["dragover","drop"].forEach(function(n){window.addEventListener(n,function(e){e.preventDefault();if(n==="drop"&&e.dataTransfer&&e.dataTransfer.files[0])readFile(e.dataTransfer.files[0])})});
 var dz=$("drop");
 ["dragenter","dragover"].forEach(function(n){dz.addEventListener(n,function(e){e.preventDefault();dz.classList.add("over")})});
 ["dragleave","drop"].forEach(function(n){dz.addEventListener(n,function(e){e.preventDefault();dz.classList.remove("over")})});
@@ -484,9 +519,9 @@ $("signup").onclick=function(){var em=$("em").value.trim(),pw=$("pw").value;if(!
 $("signout").onclick=function(){sb.auth.signOut()};
 sb.auth.onAuthStateChange(function(ev,session){
   USER=session?session.user:null;
-  if(USER){document.querySelector("main").hidden=false;$("auth").hidden=true;$("who").textContent=USER.email;
+  if(USER){document.querySelector("main").hidden=false;$("auth").hidden=true;
     if(loadedFor!==USER.id){loadedFor=USER.id;setTimeout(function(){$("sample").hidden=true;loadHistory()},0)}}
-  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};$("out").hidden=true;$("upsec").hidden=true;$("savebar").hidden=true}});
+  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};$("out").hidden=true;$("upsec").hidden=true;$("budsec").hidden=true;$("savebar").hidden=true}});
 
 async function loadHistory(){
   S.preview=false;$("savebar").hidden=true;$("err").textContent="";
@@ -498,7 +533,7 @@ async function loadHistory(){
   S.over={};(rl.data||[]).forEach(function(x){S.over[x.key]=x.category});
   await loadBudgets();
   loadUploads();
-  if(!all.length){$("out").hidden=true;$("fname").textContent="No saved transactions yet. Upload your first CSV above.";return}
+  if(!all.length){$("out").hidden=true;$("budsec").hidden=true;$("fname").textContent="No saved transactions yet. Upload your first CSV above.";return}
   S.raw=all.map(function(x){var p=x.txn_date.split("-");return{date:new Date(+p[0],p[1]-1,+p[2]),desc:x.description,amt:Number(x.amount)}});
   S.flip=false;S.fc=S.fm=null;S.q="";S.all=false;$("flip").checked=false;$("q").value="";
   $("fname").textContent="Showing your full history: "+all.length+" saved transactions";
@@ -542,18 +577,22 @@ async function loadBudgets(){
 function groupOf(c){var id=G.map[c];return G.groups.find(function(x){return x.id===id})||G.groups.find(function(x){return x.catch_all})||G.groups[0]}
 function bcats(){return CATS.filter(function(c){return c!==PAY})}
 
+function bcard(name,s,b){
+  var p=b?s/b*100:0,cls=!b?"":p>100?"over":p>=85?"warn":"",C=339.29,dash=Math.min(p,100)/100*C,
+    label=!b?"no budget":p>100?"over budget":"used",
+    cap=b?gbp0.format(s)+" of "+gbp0.format(b):gbp0.format(s)+" spent",
+    st=!b?"":s>b?'<span class="up">'+gbp0.format(s-b)+" over</span>":gbp0.format(b-s)+" left";
+  return'<div class="bcard '+cls+'"><h4>'+esc(name)+'</h4><div class="ring" role="img" aria-label="'+esc(name)+": "+esc(cap)+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="54" fill="none" stroke-width="11"/><circle class="pr" cx="60" cy="60" r="54" fill="none" stroke-width="11" stroke-dasharray="'+dash.toFixed(2)+" "+C+'"/></svg><div class="ringtxt"><b>'+(b?Math.round(p)+"<small>%</small>":"–")+"</b><span>"+label+'</span></div></div><div class="cap">'+cap+(st?" · "+st:"")+"</div></div>"}
 function budgets(sp,ms){
-  BU={sp:sp,ms:ms};if(!G.groups.length)defaultGroups();
+  BU={sp:sp,ms:ms};if(!G.groups.length)defaultGroups();$("budsec").hidden=!ms.length;
   if(!ms.length){$("bcards").innerHTML="";$("btab").innerHTML="";$("bm").innerHTML="";return}
   var by={};sp.forEach(function(t){var k=mk(t.date),g=groupOf(t.cat).id;by[k]=by[k]||{};by[k][g]=(by[k][g]||0)+t.amt});
   if(!S.bm||ms.indexOf(S.bm)<0)S.bm=ms[ms.length-1];
   $("bm").innerHTML=ms.slice().reverse().map(function(m){return'<option value="'+m+'"'+(m===S.bm?" selected":"")+">"+mlabel(m)+"</option>"}).join("");
   var cur=by[S.bm]||{},tb=0,ts=0;
-  $("bcards").innerHTML=G.groups.map(function(g){var s=cur[g.id]||0,b=g.budget||0,p=b?s/b*100:0,cls=!b?"":p>100?"over":p>=85?"warn":"",st;
-    if(b){ts+=s;tb+=b}
-    st=!b?"No budget set":s>b?'<span class="up">'+gbp0.format(s-b)+" over budget</span>":gbp0.format(b-s)+" left";
-    return'<div class="bgrp"><div class="bhead"><b>'+esc(g.name)+"</b><span>"+gbp0.format(s)+(b?" of "+gbp0.format(b):"")+'</span></div><div class="bbar '+cls+'"><i style="width:'+Math.min(p,100)+'%"></i></div><div class="note">'+st+"</div></div>"}).join("")
-  +(tb?'<div class="bgrp"><div class="bhead"><b>All budgeted groups</b><span>'+gbp0.format(ts)+" of "+gbp0.format(tb)+'</span></div><div class="note">'+(ts>tb?'<span class="up">'+gbp0.format(ts-tb)+" over budget overall</span>":gbp0.format(tb-ts)+" left overall")+"</div></div>":"");
+  var cards=G.groups.map(function(g){var v=cur[g.id]||0,bd=g.budget||0;if(bd){ts+=v;tb+=bd}return bcard(g.name,v,bd)});
+  if(tb)cards.push(bcard("All budgeted groups",ts,tb));
+  $("bcards").innerHTML=cards.join("");
   $("btab").innerHTML='<thead><tr><th>Group</th><th class="n">Budget</th>'+ms.map(function(m){return'<th class="n">'+mlabel(m)+"</th>"}).join("")+"</tr></thead><tbody>"+
     G.groups.map(function(g){return"<tr><td>"+esc(g.name)+'</td><td class="n">'+(g.budget?gbp0.format(g.budget):"–")+"</td>"+ms.map(function(m){var s=(by[m]||{})[g.id]||0,o=g.budget&&s>g.budget;return'<td class="n'+(o?" ovr up":"")+'">'+(s?gbp0.format(s):"–")+"</td>"}).join("")+"</tr>"}).join("")+"</tbody>"}
 
@@ -599,7 +638,9 @@ async function saveBudgets(){
 
 $("out").parentNode.insertBefore($("upsec"),$("out"));
 window.addEventListener("beforeunload",function(e){if(S.preview){e.preventDefault();e.returnValue=""}});
-var m0=$("months").closest("section");m0.parentNode.insertBefore($("budsec"),m0);
+$("upsec").parentNode.insertBefore($("budsec"),$("upsec"));
+function fit(el,minW){var n=el.children.length;if(!n)return;var g=parseFloat(getComputedStyle(el).columnGap)||12,m=Math.max(1,Math.floor((el.clientWidth+g)/(minW+g))),rows=Math.ceil(n/m);el.style.setProperty("--cols",Math.ceil(n/rows))}
+[["cats",168],["bcards",260]].forEach(function(x){var el=$(x[0]),f=function(){fit(el,x[1])};el.classList.add("fit");new ResizeObserver(f).observe(el);new MutationObserver(f).observe(el,{childList:true});f()});
 </script>
 </body>
 </html>
