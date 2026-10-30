@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Amex spending analyser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
@@ -429,6 +429,95 @@ button,select,.tile,.m,.chip,.mrow,summary{touch-action:manipulation}
 @media(max-width:360px){
   .big{font-size:38px}
   .tile strong{font-size:17px}
+}
+
+/* ---------- mobile v2: fits the screen, no sideways page scroll, thumb-friendly ---------- */
+@media(max-width:600px){
+  body{overflow-x:clip;font-size:16px}
+  main{padding-top:12px;padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+  /* header: title row, then one row of actions */
+  .top{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:4px}
+  h1{font-size:22px;line-height:1.15;margin:0;flex:1 1 100%}
+  .who{width:100%;gap:8px;flex-wrap:nowrap}
+  #upbtn{flex:1 1 auto}
+  .icon{width:40px;height:40px;margin:0 0 0 auto}
+  .sub{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;line-height:1.45;margin:0 0 12px}
+  .viewbar{margin-bottom:8px}.viewbar .seg{margin:0}
+  #fname{margin-top:8px}
+  /* sections: tighter, whole heading is the tap target */
+  .panel{padding:20px 0}
+  .panel.all-collapsed{padding:2px 0!important}
+  h2{font-size:20px;margin-bottom:12px}
+  h3{font-size:16px;margin:24px 0 8px}
+  .ctog{width:100%;justify-content:space-between}
+  #budsec .top .ctog{width:auto}
+  /* summary */
+  .hero{display:grid;gap:16px}
+  .big{font-size:40px}
+  .stats,.ins{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .ins div:last-child:nth-child(odd){grid-column:1/-1}
+  .stats strong,.ins strong{font-size:20px;overflow-wrap:anywhere}
+  .grid{gap:16px}
+  .donut{max-width:min(220px,34dvh)}
+  .tile{min-height:88px}
+  /* month bars: edge to edge, snap while swiping */
+  .months{margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px;scroll-snap-type:x proximity}
+  .m{flex:0 0 60px;scroll-snap-align:start}
+  /* tables: use the full screen width, tidy cells */
+  .tw{margin-inline:-16px;padding-inline:16px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  th,td{padding:10px 8px}
+  .heat th,.heat td{font-size:13px;padding:8px}
+  #upsec th:nth-child(4),#upsec td:nth-child(4){display:none}
+  /* transactions */
+  #txsec .tw{margin:0;padding:0}
+  #rows tr{padding:12px 0}
+  #txsec .tools #clear{flex:1 1 auto}
+  /* budgets */
+  .tools select{width:100%;max-width:none}
+  #budsec .tools{flex-direction:column;align-items:stretch;gap:4px}
+  #bform .tw{margin:0;padding:0;overflow:visible}
+  #bform table,#bform tbody{display:block}
+  #bform thead{display:none}
+  #bform tr{display:grid;grid-template-columns:minmax(0,1fr) 112px;grid-template-areas:"n b" "c c" "a m" "r r";gap:8px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+  #bform td{display:block;padding:0;border:0}
+  #bform td.n{text-align:left}
+  #bform td:nth-child(1){grid-area:n}#bform td:nth-child(2){grid-area:b}#bform td:nth-child(3){grid-area:c}
+  #bform td:nth-child(4){grid-area:a}#bform td:nth-child(5){grid-area:m}#bform td:nth-child(6){grid-area:r}
+  #bform td:nth-child(4),#bform td:nth-child(5){display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+  #bform td:nth-child(4)::after{content:"Everything else"}
+  #bform td:nth-child(5)::after{content:"Merge"}
+  #bform td:nth-child(6):empty{display:none}
+  #bform td:nth-child(6) .btn{width:100%}
+  #bform input:not([type=radio]):not([type=checkbox]){max-width:none}
+  /* dialogs: bottom sheets that always fit the visible height */
+  #calc,#rn{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;border-bottom:0;overscroll-behavior:contain}
+  #calc{height:calc(100dvh - 16px);max-height:calc(100dvh - 16px)}
+  #rn{max-height:calc(100dvh - 16px)}
+  .chead{padding:12px 16px 4px}
+  .chead h2{font-size:20px}
+  #calcbody,#rnbody{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .cfoot{padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg)}
+  #csum{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 8px;margin-bottom:8px}
+  #csum div{font-size:11px}
+  #csum strong{font-size:15px;overflow-wrap:anywhere}
+  .cfoot .note{font-size:12px;line-height:1.35;margin:8px 0 0}
+  #cmsg:empty{display:none}
+  .cbtns{gap:8px}
+  .cbtns .btn{flex:1 1 40%;padding:0 12px}
+  #cimpbtn,#rnreset{flex-basis:100%}
+  .csec{padding:12px}
+  .csfoot{flex-direction:column;align-items:stretch;gap:4px}
+  .ctrack{min-height:36px}
+  .ctrack:has(.ccomb){flex-wrap:wrap}
+  .ccomb{flex:1 1 140px;width:auto!important}
+  /* sign in */
+  #auth{place-items:start center;padding:15dvh 16px 24px}
+  .authcard h1{font-size:26px}
+}
+/* short landscape phones: dialogs use the whole screen */
+@media(max-height:480px) and (max-width:900px){
+  #calc,#rn{width:100%;max-width:100%;height:100dvh;max-height:100dvh;margin:0;border-radius:0}
+  .cfoot .note{display:none}
 }
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
