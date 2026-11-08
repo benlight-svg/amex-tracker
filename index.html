@@ -540,10 +540,14 @@ body[data-view="analyser"] #trk{display:none}
 .t-warn button{background:none;border:0;padding:0 0 0 4px;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
 .t-hero{padding:20px;border-radius:20px;background:var(--soft);margin-bottom:20px}
 .t-hl{font-size:14px;color:var(--muted)}
-.t-big{font-size:44px;line-height:1.1;font-weight:600;letter-spacing:-.03em;margin:2px 0 12px}
+.t-big{font-size:44px;line-height:1.15;font-weight:600;letter-spacing:.01em;margin:6px 0 18px}
 .t-big.over{color:#d93025}
 :root[data-theme="dark"] .t-big.over{color:#f28b82}
-.t-hs{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.4}
+.t-hs{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px;color:var(--muted);margin-top:14px;line-height:1.5}
+.t-hsf{flex-basis:100%}
+#trk,#t-tx,#t-cat{letter-spacing:.01em}
+.t-amt strong,.t-ramt,.bt-amt strong{letter-spacing:.01em!important}
+.bt-amt,.bt-left{letter-spacing:.01em}
 .t-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .t-bar i{display:block;height:100%;border-radius:4px;background:var(--c,var(--accent));transition:width .3s}
 .t-bar.warn i{background:#f9ab00}
@@ -1531,7 +1535,7 @@ function render(){
     var left=rd(lim-lspent),over=left<0,ratio=lspent/lim;
     h='<div class="t-hl">'+(over?"Over your limits by":"Left to spend")+'</div><div class="t-big'+(over?" over":"")+'">'+money.format(Math.abs(left))+'</div>'+
       '<div class="t-bar'+(over?" over":ratio>=.8?" warn":"")+'"><i style="width:'+Math.min(100,ratio*100)+'%"></i></div>'+
-      '<div class="t-hs">'+money.format(lspent)+' of '+money.format(lim)+' used'+(dl?' · '+dl:'')+(spent!==lspent?'<br>Plus '+money.format(rd(spent-lspent))+' in categories with no limit':'')+'</div>'}
+      '<div class="t-hs"><span>'+money.format(lspent)+' of '+money.format(lim)+' used</span>'+(dl?'<span>'+dl+'</span>':'')+(spent!==lspent?'<span class="t-hsf">Plus '+money.format(rd(spent-lspent))+' in categories with no limit</span>':'')+'</div>'}
   else h='<div class="t-hl">Spent this period</div><div class="t-big" style="margin-bottom:0">'+money.format(spent)+'</div><div class="t-hs">'+(T.cats.length?'Set a limit on a category to see how much is left.':'Add a category to get started.')+(dl?' · '+dl:'')+'</div>';
   $("t-hero").innerHTML=h;
 
