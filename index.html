@@ -630,6 +630,27 @@ body[data-view="analyser"] #trk{display:none}
   #t-tx,#t-cat{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;border-bottom:0;max-height:calc(100dvh - 16px)}
   .t-df{padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
 }
+/* analyser on phones: tracker-style budget cards (bars) instead of rings, softer summary card */
+.bt-amt,.bt-bar,.bt-left{display:none}
+@media(max-width:720px){
+  #bcards.fit{display:grid;grid-template-columns:1fr;gap:12px;--gap:12px}
+  .bcard{align-items:stretch;gap:10px;padding:14px 16px 16px;border-radius:16px;background:var(--surface)}
+  .bcard h4{display:flex;align-items:center;gap:10px;margin:0;font-size:17px;line-height:1.3;font-weight:600;letter-spacing:-.01em}
+  .bcard h4::before{content:"";flex:none;width:12px;height:12px;border-radius:50%;background:var(--used)}
+  .bcard .ring,.bcard .cap{display:none}
+  .bt-amt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .bt-amt strong{font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.02em}
+  .bt-amt span{font-size:14px;color:var(--muted)}
+  .bt-bar{display:block;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+  .bt-bar i{display:block;height:100%;border-radius:4px;background:var(--used);transition:width .3s}
+  .bcard.warn .bt-bar i{background:#f9ab00}
+  .bcard.over .bt-bar i{background:#d93025}
+  :root[data-theme="dark"] .bcard.over .bt-bar i{background:#f28b82}
+  .bt-left{display:block;font-size:14px;color:var(--muted)}
+  .bt-left .up{font-weight:600}
+  .hero{padding:20px;border-radius:20px;background:var(--soft)}
+}
+@media(max-width:720px) and (prefers-reduced-motion:reduce){.bt-bar i{transition:none}}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -1134,7 +1155,8 @@ function bcard(name,s,b,color){
     label=!b?"no budget":p>100?"over budget":"used",
     cap=b?gbp0.format(s)+" of "+gbp0.format(b):gbp0.format(s)+" spent",
     st=!b?"":s>b?'<span class="up">'+gbp0.format(s-b)+" over</span>":gbp0.format(b-s)+" left";
-  return'<div class="bcard '+cls+'" data-c="'+(PAL[color]?color:"blue")+'"><h4>'+esc(name)+'</h4><div class="ring" role="img" aria-label="'+esc(name)+": "+esc(cap)+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="54" fill="none" stroke-width="11"/><circle class="pr" cx="60" cy="60" r="54" fill="none" stroke-width="11" stroke-dasharray="'+dash.toFixed(2)+" "+C+'"/></svg><div class="ringtxt"><b>'+(b?Math.round(p)+"<small>%</small>":"–")+"</b><span>"+label+'</span></div></div><div class="cap">'+cap+(st?" · "+st:"")+"</div></div>"}
+  var tb='<div class="bt-amt"><strong>'+gbp0.format(s)+'</strong>'+(b?'<span>of '+gbp0.format(b)+'</span>':'<span>spent</span>')+'</div>'+(b?'<div class="bt-bar" aria-hidden="true"><i style="width:'+Math.min(p,100).toFixed(1)+'%"></i></div>':'')+'<div class="bt-left">'+(!b?'No budget set':s>b?'<span class="up">'+gbp0.format(s-b)+' over</span>':gbp0.format(b-s)+' left')+'</div>';
+  return'<div class="bcard '+cls+'" data-c="'+(PAL[color]?color:"blue")+'"><h4>'+esc(name)+'</h4><div class="ring" role="img" aria-label="'+esc(name)+": "+esc(cap)+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="54" fill="none" stroke-width="11"/><circle class="pr" cx="60" cy="60" r="54" fill="none" stroke-width="11" stroke-dasharray="'+dash.toFixed(2)+" "+C+'"/></svg><div class="ringtxt"><b>'+(b?Math.round(p)+"<small>%</small>":"–")+"</b><span>"+label+'</span></div></div><div class="cap">'+cap+(st?" · "+st:"")+"</div>"+tb+"</div>"}
 function budgets(sp,ms){
   BU={sp:sp,ms:ms};if(!G.groups.length)defaultGroups();$("budsec").hidden=!ms.length;$("seg").hidden=!ms.length;
   if(!ms.length){$("bcards").innerHTML="";$("btab").innerHTML="";$("bm").innerHTML="";return}
