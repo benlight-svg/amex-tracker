@@ -728,6 +728,64 @@ main:has(#out:not([hidden])) .sub{display:none}
   .b-bar select{flex:1 1 auto}
   .bc.sum{grid-column:auto}
 }
+
+/* ---------- budget page: full width + Monzo sheet ---------- */
+#trk,#bud{max-width:none;padding-left:max(clamp(16px,4vw,64px),env(safe-area-inset-left));padding-right:max(clamp(16px,4vw,64px),env(safe-area-inset-right))}
+#bud .b-bar select,#budsec .b-bar select{flex:0 1 280px}
+#bform{background:var(--surface)}
+#bform .tw{overflow-x:visible}
+#bform table{width:100%;table-layout:auto}
+#bform td input[data-e="name"]{min-width:160px;max-width:none}
+#bform td input[data-e="budget"]{min-width:110px}
+.bcats{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+#budsec .b-bar{margin-top:4px}
+.hh-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px;align-items:start;margin-top:8px}
+.hh-sec{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:16px 20px 12px;min-width:0}
+.hh-h{display:flex;align-items:center;gap:12px;margin:0 0 8px}
+.hh-h h3{margin:0;font-size:18px;line-height:1.3;font-weight:600;flex:1 1 auto;display:flex;align-items:center;gap:10px}
+.hh-h h3 i{flex:none;width:12px;height:12px;border-radius:50%;background:var(--c,#5A6FAF)}
+.hh-h input{flex:1 1 auto;font-weight:600;font-size:17px}
+.hh-cols,.hh-row,.hh-tot{display:grid;grid-template-columns:minmax(0,1fr) 112px 92px;gap:8px 12px;align-items:center}
+.hh-edit .hh-cols,.hh-edit .hh-row,.hh-edit .hh-tot{grid-template-columns:minmax(0,1fr) 120px 112px 40px}
+.hh-cols{font-size:13px;font-weight:600;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--line)}
+.hh-row{padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.hh-row>span:first-child{overflow-wrap:anywhere}
+.n{text-align:right}
+.hh-tot{padding:8px 0;font-size:15px}
+.hh-tot.grand{font-weight:700;border-top:2px solid var(--line);margin-top:2px}
+.hh-tot.sb{color:var(--muted);font-size:14px;padding:4px 0}
+.hh-tot>span:first-child{grid-column:1}
+.hh-tot>.n{grid-column:2}
+.hh-src{display:inline-block;padding:0 10px;border-radius:999px;font-size:12px;line-height:22px;font-weight:600;background:color-mix(in srgb,var(--sc) 16%,transparent);color:var(--ink);width:max-content}
+.hh-src[data-s="Monzo"]{--sc:#FF4F40}.hh-src[data-s="Amex"]{--sc:#006FCF}
+.hh-edit input,.hh-edit select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-height:40px;font:inherit;font-size:15px;width:100%;min-width:0}
+.hh-edit input.n{text-align:right}
+.hh-edit input.bad{border-color:#d93025}
+.hh-edit input:focus-visible,.hh-edit select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hh-x{width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;font-size:15px}
+.hh-x:hover{background:var(--soft);color:var(--ink)}
+.hh-add{margin:10px 0 4px}
+.hh-sum{background:var(--soft);border-color:transparent}
+.hh-sum .hh-tot{border-bottom:1px solid var(--line)}
+.hh-sum .hh-tot.last{border-bottom:0}
+.hh-sum .big2{font-size:22px;font-weight:700}
+.hh-neg{color:#d93025}
+:root[data-theme="dark"] .hh-neg{color:#f28b82}
+.hh-bar{position:sticky;bottom:0;z-index:4;display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));margin-top:16px;background:var(--bg);border-top:1px solid var(--line)}
+.hh-bar .sp{flex:1}
+.hh-hd{display:flex;align-items:baseline;gap:12px;margin:28px 0 4px}
+.hh-hd h3{margin:0;font-size:18px}
+@media(max-width:600px){
+  .hh-cols{display:none}
+  .hh-row{grid-template-columns:minmax(0,1fr) auto;padding:10px 0}
+  .hh-edit .hh-row{grid-template-columns:minmax(0,1fr) 112px 40px;grid-template-areas:"n n x" "a s s"}
+  .hh-edit .hh-row>:nth-child(1){grid-area:n}.hh-edit .hh-row>:nth-child(2){grid-area:a}.hh-edit .hh-row>:nth-child(3){grid-area:s}.hh-edit .hh-row>:nth-child(4){grid-area:x}
+  .hh-tot,.hh-edit .hh-tot{grid-template-columns:minmax(0,1fr) auto}
+  .hh-edit .hh-tot>.n{grid-column:2}
+  .hh-row .hh-src{grid-row:2}
+  .hh-sec{padding:14px 14px 10px}
+  .hh-bar{bottom:calc(76px + env(safe-area-inset-bottom,0px));padding-bottom:12px}
+}
 </style>
 <script>(function(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
@@ -757,6 +815,12 @@ main:has(#out:not([hidden])) .sub{display:none}
       <div><div class="note" id="range"></div><div class="big" id="total"></div><div class="note" id="tlabel" style="margin-top:8px"></div><label class="note" style="display:block;margin-top:16px"><input type="checkbox" id="net"> Take off payments and credits</label><div style="margin-top:20px"><button class="btn" id="xlsx" type="button">Download as Excel</button><span class="note" id="xmsg" style="margin-left:12px"></span></div></div>
       <div class="stats" id="stats"></div>
     </div>
+  </section>
+
+  <section class="panel" id="budsec">
+    <h2>Budgets</h2>
+    <div class="b-bar"><label class="note" for="abm" id="ambl">Month</label><select id="abm"></select><span class="sp"></span><button class="btn ghost sm" id="abedit" type="button">Edit budgets</button></div>
+    <div class="b-grid" id="abcards"></div>
   </section>
 
   <section class="panel">
@@ -832,19 +896,12 @@ main:has(#out:not([hidden])) .sub{display:none}
 <details id="b-more"><summary id="bh3">Month by month against budget</summary><div class="tw"><table id="btab"></table></div><p class="note" id="bavgnote" hidden></p></details>
 </div>
 <div id="b-monzo" hidden>
-<div class="b-bar"><span class="note">Planned each month</span><span class="sp"></span><button class="btn ghost sm" id="b-mzedit" type="button">Edit budgets</button></div>
+<div class="b-bar" id="b-mzbar"><span class="note" id="b-mznote">Planned each month</span><span class="sp"></span><button class="btn ghost sm" id="b-mzedit" type="button">Edit budget</button></div>
 <div class="b-grid" id="b-mz"></div>
-<p class="note">Monzo spending isn’t tracked here yet, so these are your planned monthly amounts.</p>
+<div id="b-sheet"></div>
+<p class="note" id="b-mzfoot">Monzo spending isn’t tracked here yet, so the Monzo figures are your planned monthly amounts.</p>
 </div>
 </section>
-<dialog id="b-mzd" aria-labelledby="b-mzdh">
-<div class="t-dh"><h3 id="b-mzdh">Monzo budgets</h3><button type="button" class="t-ic" id="b-mzx" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
-<form class="t-df" id="b-mzf" novalidate>
-<div id="b-mzfields"></div>
-<p class="t-err" id="b-mzerr" role="alert"></p>
-<div class="t-btns"><span class="sp"></span><button type="submit" class="btn">Save</button></div>
-</form>
-</dialog>
 <dialog id="t-tx" aria-labelledby="t-txh">
 <div class="t-dh"><h3 id="t-txh">Add spend</h3><button type="button" class="t-ic" id="t-txx" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
 <form class="t-df" id="t-txf" novalidate>
@@ -1134,7 +1191,7 @@ sb.auth.onAuthStateChange(function(ev,session){
   USER=session?session.user:null;
   if(USER){document.querySelector("main").hidden=false;$("auth").hidden=true;
     if(loadedFor!==USER.id){loadedFor=USER.id;setTimeout(function(){$("sample").hidden=true;loadHistory()},0)}}
-  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};S.noavg={};CN={};CUSTOM=[];rebuildCats();$("out").hidden=true;$("upsec").hidden=true;BU={sp:[],ms:[]};B.mz=null;$("seg").hidden=true;$("savebar").hidden=true}});
+  else{loadedFor=null;document.querySelector("main").hidden=true;$("auth").hidden=false;$("pw").value="";S.raw=[];S.over={};S.noavg={};CN={};CUSTOM=[];rebuildCats();$("out").hidden=true;$("upsec").hidden=true;BU={sp:[],ms:[]};B.hh=null;B.he=null;$("seg").hidden=true;$("savebar").hidden=true}});
 
 async function loadHistory(){
   S.preview=false;$("savebar").hidden=true;$("err").textContent="";
@@ -1245,8 +1302,7 @@ function groupOf(c){var id=G.map[c];return G.groups.find(function(x){return x.id
 function bcats(){return CATS.filter(function(c){return c!==PAY})}
 
 /* ---------- Budget page: Amex and Monzo ---------- */
-var B={acct:"amex",mz:null,uid:null},TRAVEL="Travel",BORDER=["subscriptions","cars","groceries","personal care","fun money"];
-var MZCATS=["Subscriptions","Cars","Groceries","Personal care","Fun money"],MZDEF={"Subscriptions":59.98,"Cars":388.77,"Groceries":0,"Personal care":117.2,"Fun money":0};
+var B={acct:"amex",hh:null,he:null,uid:null},TRAVEL="Travel",BORDER=["subscriptions","cars","groceries","personal care","fun money"];
 try{var ba=localStorage.getItem("bacct");if(ba==="amex"||ba==="monzo")B.acct=ba}catch(e){}
 function gcol(n){var g=G.groups.find(function(x){return x.name.trim().toLowerCase()===n.toLowerCase()});return g?g.color:colorFor(n)}
 function bShown(){return G.groups.map(function(g,i){return{g:g,i:i}}).filter(function(o){return!/household|^travel$/i.test(o.g.name.trim())}).sort(function(a,b){var x=BORDER.indexOf(a.g.name.trim().toLowerCase()),y=BORDER.indexOf(b.g.name.trim().toLowerCase());x=x<0?9:x;y=y<0?9:y;return x-y||a.i-b.i}).map(function(o){return o.g})}
@@ -1260,7 +1316,7 @@ function bc(name,sp,bd,color,o){o=o||{};
   return'<div class="bc'+cls+'" style="--c:'+col+'"><div class="bc-h"><i class="bc-dot"></i><span>'+esc(name)+'</span>'+(o.tag?'<span class="bc-tag">'+esc(o.tag)+'</span>':"")+'</div>'+amt+bar+(left?'<div class="bc-left">'+left+'</div>':"")+'</div>'}
 function budgets(sp,ms){BU={sp:sp,ms:ms};if(!G.groups.length)defaultGroups();$("seg").hidden=!ms.length;drawBudget()}
 function drawBudget(){
-  if(typeof USER!=="undefined"&&USER&&B.uid!==USER.id){B.uid=USER.id;B.mz=null}
+  if(typeof USER!=="undefined"&&USER&&B.uid!==USER.id){B.uid=USER.id;B.hh=null;B.he=null}
   var amex=B.acct==="amex";$("b-amex").hidden=!amex;$("b-monzo").hidden=amex;
   document.querySelectorAll("#b-acct [data-a]").forEach(function(b){b.setAttribute("aria-checked",String(b.dataset.a===B.acct))});
   if(amex)drawAmex();else drawMonzo()}
@@ -1282,31 +1338,94 @@ function drawAmex(){
   var ts=0,tb=0,cards=gs.map(function(g){var v=cur[g.id]||0,bd=g.budget||0;if(bd){ts+=v;tb+=bd}return bc(g.name,v,bd,g.color)});
   if(tb)cards.unshift(bc("All budgets",ts,tb,"blue",{sum:1}));
   $("bcards").innerHTML=cards.join("");
+  var tvc=bc("Travel",tv,0,"blue",{extra:1,tag:"Extra",sub:avg?"so far":"spent",left:""});
+  $("abm").innerHTML=has?$("bm").innerHTML:"";$("abcards").innerHTML=has?cards.join("")+tvc:"";
   $("b-travel").innerHTML='<h3 class="b-sub">Extra</h3><div class="b-grid">'+bc("Travel",tv,0,"blue",{extra:1,tag:"Extra",sub:avg?"so far":"spent",left:""})+'</div><p class="note">Travel doesn’t happen every month, so it isn’t part of your budget and is kept out of the totals above.</p>';
   var bn=$("bavgnote");bn.hidden=!avgNote();bn.textContent=avgNote()?"* The average is "+avgNote()+". Change this under Spending by category in the Analyser.":"";
   if(!has){$("btab").innerHTML="";return}
   $("btab").innerHTML='<thead><tr><th>Group</th><th class="n">Budget</th><th class="n">Average'+(avgNote()?" *":"")+'</th>'+ms.map(function(m){return'<th class="n">'+mlabel(m)+"</th>"}).join("")+"</tr></thead><tbody>"+
     gs.map(function(g){return"<tr><td>"+esc(g.name)+'<span class="catlist">'+esc(bcats().filter(function(c){return c!==TRAVEL&&groupOf(c).id===g.id}).map(dn).join(", "))+'</span></td><td class="n">'+(g.budget?gbp0.format(g.budget):"–")+'</td><td class="n">'+(function(){var a=ms.reduce(function(q,m){return q+((byA[m]||{})[g.id]||0)},0)/ms.length;return a?gbp0.format(a):"–"})()+"</td>"+ms.map(function(m){var v=(by[m]||{})[g.id]||0,o=g.budget&&v>g.budget;return'<td class="n'+(o?" ovr up":"")+'">'+(v?gbp0.format(v):"–")+"</td>"}).join("")+"</tr>"}).join("")+
     '<tr><td>Travel<span class="catlist">Extra, not budgeted</span></td><td class="n">–</td><td class="n">–</td>'+ms.map(function(m){var v=trv[m]||0;return'<td class="n">'+(v?gbp0.format(v):"–")+"</td>"}).join("")+"</tr></tbody>"}
-function mzLoad(){var v=null,u=USER?USER.id:"";try{v=USER.user_metadata.monzo_budget}catch(e){}
-  if(!v||typeof v!=="object"){try{v=JSON.parse(localStorage.getItem("monzobudget:"+u)||"null")}catch(e){v=null}}
-  var o={};MZCATS.forEach(function(c){var n=v&&typeof v==="object"?Number(v[c]):NaN;o[c]=isFinite(n)&&n>=0?n:MZDEF[c]});return o}
-function drawMonzo(){B.mz=B.mz||mzLoad();var tot=0,cards=[];
-  MZCATS.forEach(function(c){var v=B.mz[c]||0;if(v>0){tot+=v;cards.push(bc(c,v,0,gcol(c),{mz:1,sub:"a month",left:""}))}});
+/* ----- Monzo: the whole household budget, laid out like the spreadsheet ----- */
+var HH_SRC=["Monzo","Amex"];
+function hhDefault(){function I(n,a,s){return{n:n,a:a,s:s}}
+  return{groups:[
+    {name:"Household",items:[I("Mortgage",1503.44,"Monzo"),I("Council Tax",209,"Monzo"),I("Life Insurance",41.6,"Monzo"),I("Home Insurance",16.27,"Monzo"),I("Gas",34.87,"Monzo"),I("Electricity",54.9,"Monzo"),I("Water",36,"Monzo"),I("Firstport",18,"Monzo"),I("TV Licence",14.95,"Monzo"),I("Sky",67.89,"Monzo"),I("BT",25.99,"Monzo"),I("Cleaning",80,"Monzo"),I("Window Cleaner",25,"Monzo")]},
+    {name:"Subscriptions",items:[I("Apple Care - Leanne (personal phone)",12.99,"Amex"),I("Apple Care - Leanne (Business phone)",11.99,"Amex"),I("Apple Care - Ben",8.99,"Monzo"),I("Apple Care - Ben airpods",1.48,"Amex"),I("iPhone SIM contract - Ben, Leanne, SoSocial",39,"Monzo"),I("iCloud",8.99,"Amex"),I("Amazon Prime",4.49,"Amex"),I("NYT Games",0.99,"Amex"),I("Morsia App",7.49,"Amex"),I("Hayu",6,"Monzo"),I("Spotify",21.99,"Amex"),I("Oura Ring",5.99,"Monzo"),I("Meta Verified",11.99,"Amex")]},
+    {name:"Cars",items:[I("Petrol Qashqai",140,"Amex"),I("Petrol Golf",130,"Amex"),I("Car Insurance Qashqai",48.05,"Monzo"),I("Qashqai monthly payment",325.72,"Monzo"),I("Qashqai Tax",15,"Monzo")]},
+    {name:"Personal care",items:[I("Haircuts - Ben",66,"Monzo"),I("Make-up - Leanne",30,"Amex"),I("Contact Lenses (via Lloyds)",51.2,"Monzo"),I("Gym Membership - Leanne",63.8,"Amex"),I("Gym Membership - Ben",43,"Amex")]},
+    {name:"Groceries",items:[I("Food",380,"Amex")]}],
+   income:[{n:"Leanne Monthly Pay",a:1689.12},{n:"Ben Monthly Pay",a:2729.24}],savings:500}}
+function hhClean(v){var d=hhDefault();if(!v||typeof v!=="object"||!Array.isArray(v.groups)||!v.groups.length)return d;
+  var num=function(x){x=Number(x);return isFinite(x)&&x>=0?Math.round(x*100)/100:0};
+  return{groups:v.groups.map(function(g){return{name:String(g&&g.name||"Group").slice(0,40),items:(Array.isArray(g&&g.items)?g.items:[]).map(function(it){return{n:String(it&&it.n||"").slice(0,80),a:num(it&&it.a),s:HH_SRC.indexOf(it&&it.s)>=0?it.s:"Monzo"}})}}),
+    income:Array.isArray(v.income)?v.income.map(function(x){return{n:String(x&&x.n||"").slice(0,60),a:num(x&&x.a)}}):d.income,savings:num(v.savings)}}
+function hhLoad(){var v=null,u=USER?USER.id:"";try{v=USER.user_metadata.household_budget}catch(e){}
+  if(!v||typeof v!=="object"){try{v=JSON.parse(localStorage.getItem("hhbudget:"+u)||"null")}catch(e){v=null}}
+  return hhClean(v)}
+function hhSum(items,src){return Math.round(items.reduce(function(t,i){return t+((!src||i.s===src)?(+i.a||0):0)},0)*100)/100}
+function hhCalc(d){var inc=Math.round(d.income.reduce(function(t,i){return t+(+i.a||0)},0)*100)/100,
+  exp=Math.round(d.groups.reduce(function(t,g){return t+hhSum(g.items)},0)*100)/100,left=Math.round((inc-exp)*100)/100,sav=+d.savings||0;
+  return{inc:inc,exp:exp,left:left,sav:sav,fun:Math.round((left-sav)*100)/100}}
+function hhColor(name){return gcol(name)}
+function drawMonzo(){B.hh=B.hh||hhLoad();var edit=!!B.he,d=edit?B.he:B.hh;
+  $("b-mz").hidden=edit;$("b-mznote").textContent=edit?"Editing your whole budget":"Planned each month";
+  $("b-mzedit").hidden=edit;$("b-mzfoot").hidden=edit;
+  var tot=0,cards=[];
+  d.groups.forEach(function(g){var v=hhSum(g.items,"Monzo");if(v>0){tot+=v;cards.push(bc(g.name,v,0,hhColor(g.name),{mz:1,sub:"a month on Monzo",left:""}))}});
   if(tot)cards.unshift(bc("Planned on Monzo",tot,0,"blue",{mz:1,sum:1,sub:"a month",left:""}));
-  $("b-mz").innerHTML=cards.length?cards.join(""):'<p class="note">Nothing planned on Monzo yet. Tap Edit budgets to add your monthly amounts.</p>'}
+  $("b-mz").innerHTML=cards.length?cards.join(""):'<p class="note">Nothing planned on Monzo yet. Tap Edit budget to add your monthly amounts.</p>';
+  drawSheet(edit,d)}
+function srcCell(it,edit,g,i){return edit?'<select data-h="s" data-g="'+g+'" data-i="'+i+'" aria-label="Source">'+HH_SRC.map(function(o){return'<option'+(o===it.s?" selected":"")+">"+o+"</option>"}).join("")+"</select>":'<span class="hh-src" data-s="'+esc(it.s)+'">'+esc(it.s)+"</span>"}
+function drawSheet(edit,d){var c=hhCalc(d),col=function(n){return(PAL[hhColor(n)]||PAL.blue)[1]};
+  var secs=d.groups.map(function(g,gi){
+    var head=edit?'<div class="hh-h"><input data-h="gname" data-g="'+gi+'" maxlength="40" value="'+esc(g.name)+'" aria-label="Group name"><button type="button" class="hh-x" data-h="delg" data-g="'+gi+'" aria-label="Remove group '+esc(g.name)+'" title="Remove group"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></div>'
+      :'<div class="hh-h"><h3 style="--c:'+col(g.name)+'"><i></i>'+esc(g.name)+"</h3></div>";
+    var rows=g.items.map(function(it,i){return'<div class="hh-row">'+(edit?'<input data-h="n" data-g="'+gi+'" data-i="'+i+'" maxlength="80" value="'+esc(it.n)+'" placeholder="Item" aria-label="Item"><input class="n" data-h="a" data-g="'+gi+'" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" value="'+(it.a||"")+'" placeholder="0.00" aria-label="Amount in pounds">'+srcCell(it,true,gi,i)+'<button type="button" class="hh-x" data-h="deli" data-g="'+gi+'" data-i="'+i+'" aria-label="Remove '+esc(it.n||"item")+'" title="Remove"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>'
+      :"<span>"+esc(it.n)+'</span><span class="n">'+gbp.format(it.a)+"</span>"+srcCell(it,false))+"</div>"}).join("");
+    var mz=hhSum(g.items,"Monzo"),ax=hhSum(g.items,"Amex");
+    return'<section class="hh-sec" data-g="'+gi+'">'+head+'<div class="hh-cols"><span>Item</span><span class="n">Amount</span><span>Source</span>'+(edit?"<span></span>":"")+"</div>"+rows+
+      (edit?'<div class="hh-add"><button type="button" class="btn ghost sm" data-h="addi" data-g="'+gi+'">Add item</button></div>':"")+
+      '<div class="hh-tot grand"><span>Total</span><span class="n" data-t="g'+gi+'">'+gbp.format(hhSum(g.items))+'</span></div>'+
+      '<div class="hh-tot sb"><span>Monzo</span><span class="n" data-t="m'+gi+'">'+gbp.format(mz)+'</span></div>'+
+      '<div class="hh-tot sb"><span>Amex</span><span class="n" data-t="x'+gi+'">'+gbp.format(ax)+"</span></div></section>"}).join("");
+  var inc=d.income.map(function(x,i){return'<div class="hh-row">'+(edit?'<input data-h="in" data-i="'+i+'" maxlength="60" value="'+esc(x.n)+'" placeholder="e.g. Monthly pay" aria-label="Income name"><input class="n" data-h="ia" data-i="'+i+'" type="text" inputmode="decimal" autocomplete="off" value="'+(x.a||"")+'" placeholder="0.00" aria-label="Income amount"><span></span><button type="button" class="hh-x" data-h="deli2" data-i="'+i+'" aria-label="Remove income" title="Remove"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>':"<span>"+esc(x.n)+'</span><span class="n">'+gbp.format(x.a)+"</span>")+"</div>"}).join("");
+  var T=function(l,k,v,cls){return'<div class="hh-tot'+(cls?" "+cls:"")+'"><span>'+l+'</span><span class="n'+(v<0?" hh-neg":"")+'" data-t="'+k+'">'+gbp.format(v)+"</span></div>"};
+  var sum='<section class="hh-sec hh-sum"><div class="hh-h"><h3>Income and what’s left</h3></div>'+inc+(edit?'<div class="hh-add"><button type="button" class="btn ghost sm" data-h="addin">Add income</button></div>':"")+
+    T("Total household income","inc",c.inc,"grand")+T("Total expenses","exp",c.exp)+T("Left over","left",c.left)+
+    '<div class="hh-row"><span>Savings</span>'+(edit?'<input class="n" data-h="sav" type="text" inputmode="decimal" autocomplete="off" value="'+(d.savings||"")+'" placeholder="0.00" aria-label="Savings">':'<span class="n">'+gbp.format(d.savings)+"</span>")+"</div>"+
+    '<div class="hh-tot grand last"><span>Fun money</span><span class="n big2'+(c.fun<0?" hh-neg":"")+'" data-t="fun">'+gbp.format(c.fun)+"</span></div></section>";
+  var bar=edit?'<div class="hh-bar"><button type="button" class="btn ghost sm" data-h="addg">Add group</button><span class="note" id="hh-msg" role="alert" style="margin:0"></span><span class="sp"></span><button type="button" class="btn ghost" data-h="cancel">Cancel</button><button type="button" class="btn" data-h="save">Save budget</button></div>':"";
+  $("b-sheet").innerHTML='<div class="hh-hd"><h3>Full budget</h3><span class="note" style="margin:0">'+(edit?"Change any amount, item or source. Totals update as you type.":"Every item, whichever account it comes out of.")+"</span></div>"+'<div class="hh-wrap'+(edit?" hh-edit":"")+'">'+secs+sum+"</div>"+bar}
+function hhTotals(){var d=B.he,c=hhCalc(d),set=function(k,v){var e=$("b-sheet").querySelector('[data-t="'+k+'"]');if(e){e.textContent=gbp.format(v);e.classList.toggle("hh-neg",v<0)}};
+  d.groups.forEach(function(g,i){set("g"+i,hhSum(g.items));set("m"+i,hhSum(g.items,"Monzo"));set("x"+i,hhSum(g.items,"Amex"))});
+  set("inc",c.inc);set("exp",c.exp);set("left",c.left);set("fun",c.fun)}
+function hhNum(str){var t=String(str).replace(/[£,\s]/g,"").replace(/^=/,"");if(t==="")return 0;
+  if(!/^[0-9+\-*\/().]+$/.test(t))return NaN;var n;try{n=Function('"use strict";return ('+t+")")()}catch(e){return NaN}
+  return isFinite(n)&&n>=0?Math.round(n*100)/100:NaN}
 $("b-acct").onclick=function(e){var b=e.target.closest("[data-a]");if(!b)return;B.acct=b.dataset.a;try{localStorage.setItem("bacct",B.acct)}catch(x){}drawBudget()};
-$("b-mzedit").onclick=function(){B.mz=B.mz||mzLoad();
-  $("b-mzfields").innerHTML=MZCATS.map(function(c){return'<label class="t-lab">'+esc(c)+'<span class="t-money sm"><span aria-hidden="true">£</span><input type="text" inputmode="decimal" autocomplete="off" data-c="'+esc(c)+'" value="'+(B.mz[c]?String(B.mz[c]):"")+'" placeholder="0"></span></label>'}).join("");
-  $("b-mzerr").textContent="";$("b-mzd").showModal()};
-$("b-mzf").onsubmit=function(e){e.preventDefault();var o={},bad=null;
-  Array.prototype.forEach.call($("b-mzfields").querySelectorAll("input"),function(i){var r=i.value.replace(/[£,\s]/g,""),n=r===""?0:Number(r);if(!isFinite(n)||n<0)bad=bad||i.dataset.c;o[i.dataset.c]=Math.round(n*100)/100});
-  if(bad){$("b-mzerr").textContent="Check the amount for "+bad+".";return}
-  B.mz=o;try{localStorage.setItem("monzobudget:"+USER.id,JSON.stringify(o))}catch(x){}
-  sb.auth.updateUser({data:{monzo_budget:o}}).catch(function(){});
-  $("b-mzd").close();drawMonzo()};
-$("b-mzx").onclick=function(){$("b-mzd").close()};
-$("b-mzd").addEventListener("click",function(e){if(e.target===$("b-mzd"))$("b-mzd").close()});
+$("b-mzedit").onclick=function(){B.hh=B.hh||hhLoad();B.he=JSON.parse(JSON.stringify(B.hh));drawMonzo();window.scrollTo(0,0)};
+$("b-sheet").addEventListener("input",function(e){var t=e.target,h=t.dataset.h,d=B.he;if(!d||!h)return;var g=d.groups[+t.dataset.g],i=+t.dataset.i;
+  if(h==="gname")g.name=t.value;else if(h==="n")g.items[i].n=t.value;else if(h==="s")g.items[i].s=t.value;
+  else if(h==="in")d.income[i].n=t.value;
+  else if(h==="a"||h==="ia"||h==="sav"){var n=hhNum(t.value);t.classList.toggle("bad",isNaN(n));if(isNaN(n))return;if(h==="a")g.items[i].a=n;else if(h==="ia")d.income[i].a=n;else d.savings=n;hhTotals()}});
+$("b-sheet").addEventListener("change",function(e){var t=e.target,h=t.dataset.h;if(!B.he||!h)return;
+  if(h==="s"){B.he.groups[+t.dataset.g].items[+t.dataset.i].s=t.value;hhTotals()}
+  else if(h==="a"||h==="ia"||h==="sav"){var n=hhNum(t.value);if(!isNaN(n))t.value=n?String(n):""}});
+$("b-sheet").addEventListener("click",function(e){var t=e.target.closest("button[data-h]");if(!t||!B.he)return;var h=t.dataset.h,d=B.he,g=+t.dataset.g,i=+t.dataset.i;
+  if(h==="addi"){d.groups[g].items.push({n:"",a:0,s:"Monzo"});drawMonzo();var r=$("b-sheet").querySelectorAll('.hh-sec[data-g="'+g+'"] input[data-h="n"]');if(r.length)r[r.length-1].focus()}
+  else if(h==="deli"){d.groups[g].items.splice(i,1);drawMonzo()}
+  else if(h==="delg"){if(d.groups.length<2)return;d.groups.splice(g,1);drawMonzo()}
+  else if(h==="addg"){d.groups.push({name:"New group",items:[{n:"",a:0,s:"Monzo"}]});drawMonzo();var q=$("b-sheet").querySelectorAll('input[data-h="gname"]');if(q.length){var l=q[q.length-1];l.focus();l.select()}}
+  else if(h==="addin"){d.income.push({n:"",a:0});drawMonzo();var w=$("b-sheet").querySelectorAll('input[data-h="in"]');if(w.length)w[w.length-1].focus()}
+  else if(h==="deli2"){d.income.splice(i,1);drawMonzo()}
+  else if(h==="cancel"){B.he=null;drawMonzo()}
+  else if(h==="save"){var bad=$("b-sheet").querySelector("input.bad");if(bad){$("hh-msg").textContent="Fix the amounts outlined in red first.";bad.focus();return}
+    var out=hhClean({groups:d.groups.map(function(x,k){return{name:(x.name||"").trim()||"Group "+(k+1),items:x.items.filter(function(it){return(it.n||"").trim()||it.a}).map(function(it){return{n:(it.n||"").trim()||"Item",a:it.a,s:it.s}})}}),income:d.income.filter(function(x){return(x.n||"").trim()||x.a}).map(function(x){return{n:(x.n||"").trim()||"Income",a:x.a}}),savings:d.savings});
+    B.hh=out;B.he=null;try{localStorage.setItem("hhbudget:"+USER.id,JSON.stringify(out))}catch(x){}
+    sb.auth.updateUser({data:{household_budget:out}}).catch(function(){});drawMonzo();window.scrollTo(0,0)}});
+$("abm").onchange=function(){S.bm=this.value;budgets(BU.sp,BU.ms)};
+$("abedit").onclick=function(){var b=document.querySelector('#tabbar [data-v="budget"]');B.acct="amex";try{localStorage.setItem("bacct","amex")}catch(x){}if(b)b.click();if($("bform").hidden)openEditor();drawAmex()};
 
 function openEditor(){
   E={groups:G.groups.map(function(g){return{name:g.name,budget:g.budget||0,catch_all:!!g.catch_all,color:g.color||"blue"}}),map:{}};
@@ -1427,7 +1546,7 @@ function setUnit(u,closed){u.closed=closed;COLL[u.key]=closed;try{localStorage.s
     var hd=h.parentNode.classList.contains("top")?h.parentNode:h,host=hd.parentNode,body=document.createElement("div"),btn=document.createElement("button");
     body.className="cbody";body.id="cbody"+i;while(hd.nextSibling)body.appendChild(hd.nextSibling);host.appendChild(body);
     btn.type="button";btn.className="ctog";btn.setAttribute("aria-controls",body.id);while(h.firstChild)btn.appendChild(h.firstChild);btn.insertAdjacentHTML("beforeend",chev);h.appendChild(btn);
-    var panel=host.closest(".panel"),key=h.closest("#subsec")?"sub":"s"+(ki++),u={hd:hd,h:h,btn:btn,body:body,panel:panel,key:key,closed:COLL[key]===undefined?OPEN0.indexOf(h.textContent.trim())<0:!!COLL[key]};UNITS.push(u);
+    var panel=host.closest(".panel"),key=h.closest("#subsec")?"sub":h.closest("#budsec")?"bud":"s"+(ki++),u={hd:hd,h:h,btn:btn,body:body,panel:panel,key:key,closed:COLL[key]===undefined?OPEN0.indexOf(h.textContent.trim())<0:!!COLL[key]};UNITS.push(u);
     btn.onclick=function(){setUnit(u,!u.closed)}});
   UNITS.forEach(paintUnit)})();
 $("colall").onclick=function(){var close=UNITS.some(function(x){return!x.closed});UNITS.forEach(function(u){u.closed=close;COLL[u.key]=close});try{localStorage.setItem("collapsed2",JSON.stringify(COLL))}catch(e){}UNITS.forEach(paintUnit)};
