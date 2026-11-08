@@ -551,7 +551,7 @@ body[data-view="analyser"] #trk{display:none}
 .bt-amt,.bt-left{letter-spacing:.01em}
 .t-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .t-bar i{display:block;height:100%;border-radius:4px;background:var(--c,var(--accent));transition:width .3s}
-.t-bar.warn i{background:#f9ab00}
+
 .t-bar.over i{background:#d93025}
 :root[data-theme="dark"] .t-bar.over i{background:#f28b82}
 .t-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
@@ -650,7 +650,6 @@ body[data-view="analyser"] #trk{display:none}
   .bt-amt span{font-size:14px;color:var(--muted)}
   .bt-bar{display:block;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
   .bt-bar i{display:block;height:100%;border-radius:4px;background:var(--used);transition:width .3s}
-  .bcard.warn .bt-bar i{background:#f9ab00}
   .bcard.over .bt-bar i{background:#d93025}
   :root[data-theme="dark"] .bcard.over .bt-bar i{background:#f28b82}
   .bt-left{display:block;font-size:14px;color:var(--muted)}
@@ -716,7 +715,6 @@ main:has(#out:not([hidden])) .sub{display:none}
 .bc-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .bc.sum .bc-bar{background:var(--bg)}
 .bc-bar i{display:block;height:100%;border-radius:4px;background:var(--c)}
-.bc.warn .bc-bar i{background:#f9ab00}
 .bc.over .bc-bar i{background:#d93025}
 .bc-left .up{font-weight:600;color:#d93025}
 :root[data-theme="dark"] .bc.over .bc-bar i{background:#f28b82}
@@ -1321,7 +1319,7 @@ function gcol(n){var g=G.groups.find(function(x){return x.name.trim().toLowerCas
 function bShown(){return G.groups.map(function(g,i){return{g:g,i:i}}).filter(function(o){return!/household|^travel$/i.test(o.g.name.trim())}).sort(function(a,b){var x=BORDER.indexOf(a.g.name.trim().toLowerCase()),y=BORDER.indexOf(b.g.name.trim().toLowerCase());x=x<0?9:x;y=y<0?9:y;return x-y||a.i-b.i}).map(function(o){return o.g})}
 function bc(name,sp,bd,color,o){o=o||{};
   var p=bd?sp/bd*100:0,cls=o.extra?" extra":o.sum?" sum":"",col=(PAL[color]||PAL.blue)[1];
-  if(bd&&!o.extra)cls+=p>100?" over":p>=85?" warn":"";
+  if(bd&&!o.extra)cls+=p>100?" over":"";
   var f=o.mz?gbp:gbp0,
     amt='<div class="bc-amt"><strong>'+f.format(sp)+'</strong><span>'+esc(o.sub||(bd?"of "+gbp0.format(bd):"spent"))+'</span></div>',
     bar=bd&&!o.extra?'<div class="bc-bar" role="img" aria-label="'+Math.round(p)+'% used"><i style="width:'+Math.min(p,100).toFixed(1)+'%"></i></div>':"",
