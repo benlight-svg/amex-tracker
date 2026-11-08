@@ -631,8 +631,10 @@ body[data-view="analyser"] #trk{display:none}
   #trk{padding-top:12px}
   #trk .t-title{font-size:24px}
   .t-big{font-size:40px}
-  #t-tx,#t-cat{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;border-bottom:0;max-height:calc(100dvh - 16px)}
-  .t-df{padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+  #t-tx,#t-cat{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;border-bottom:0;height:calc(100dvh - 16px);max-height:calc(100dvh - 16px)}
+  #t-tx[open],#t-cat[open]{display:flex;flex-direction:column}
+  .t-df{flex:1 1 auto;display:flex;flex-direction:column;gap:16px;padding-bottom:0}
+  .t-btns{margin-top:auto;position:sticky;bottom:0;z-index:1;background:var(--bg);padding:12px 0 calc(16px + env(safe-area-inset-bottom,0px))}
 }
 /* analyser on phones: tracker-style budget cards (bars) instead of rings, softer summary card */
 .bt-amt,.bt-bar,.bt-left{display:none}
