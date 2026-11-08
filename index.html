@@ -712,6 +712,7 @@ main:has(#out:not([hidden])) .sub{display:none}
 .bc-amt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .bc-amt strong{font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.02em}
 .bc-amt span,.bc-left{font-size:14px;color:var(--muted)}
+.bc-amt.stk{flex-direction:column;align-items:flex-start;gap:2px}
 .bc-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .bc.sum .bc-bar{background:var(--bg)}
 .bc-bar i{display:block;height:100%;border-radius:4px;background:var(--c)}
@@ -1321,7 +1322,7 @@ function bc(name,sp,bd,color,o){o=o||{};
   var p=bd?sp/bd*100:0,cls=o.extra?" extra":o.sum?" sum":"",col=(PAL[color]||PAL.blue)[1];
   if(bd&&!o.extra)cls+=p>100?" over":"";
   var f=o.mz?gbp:gbp0,
-    amt='<div class="bc-amt"><strong>'+f.format(sp)+'</strong><span>'+esc(o.sub||(bd?"of "+gbp0.format(bd):"spent"))+'</span></div>',
+    amt='<div class="bc-amt'+(o.mz&&!o.sum?" stk":"")+'"><strong>'+f.format(sp)+'</strong><span>'+esc(o.sub||(bd?"of "+gbp0.format(bd):"spent"))+'</span></div>',
     bar=bd&&!o.extra?'<div class="bc-bar" role="img" aria-label="'+Math.round(p)+'% used"><i style="width:'+Math.min(p,100).toFixed(1)+'%"></i></div>':"",
     left=o.left!=null?o.left:(!bd?"No budget set":sp>bd?'<span class="up">'+gbp0.format(sp-bd)+' over</span>':gbp0.format(bd-sp)+" left");
   return'<div class="bc'+cls+'" style="--c:'+col+'"><div class="bc-h"><i class="bc-dot"></i><span>'+esc(name)+'</span>'+(o.tag?'<span class="bc-tag">'+esc(o.tag)+'</span>':"")+'</div>'+amt+bar+(left?'<div class="bc-left">'+left+'</div>':"")+'</div>'}
