@@ -532,7 +532,7 @@ body[data-view="analyser"] #trk{display:none}
 #trk button:focus-visible,#tabbar button:focus-visible,#t-tx button:focus-visible,#t-cat button:focus-visible,#t-tx input:focus-visible,#t-cat input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .t-money:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 #trk .t-month{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 16px}
-#trk .t-month strong{min-width:160px;text-align:center;font-size:17px;font-weight:600}
+#trk .t-month strong{min-width:210px;text-align:center;font-size:17px;font-weight:600}
 .t-warn{margin:0 0 16px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid #f9ab00;border-radius:12px;background:var(--soft);font-size:14px;line-height:1.4}
 .t-warn button{background:none;border:0;padding:0 0 0 4px;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
 .t-hero{padding:20px;border-radius:20px;background:var(--soft);margin-bottom:20px}
@@ -576,7 +576,7 @@ body[data-view="analyser"] #trk{display:none}
 :root[data-theme="dark"] .t-ramt.neg{color:#81c995}
 .t-empty{padding:28px 12px;text-align:center;color:var(--muted);font-size:15px}
 /* page switcher: strip on desktop, bottom bar on phones */
-#tabbar{display:flex;justify-content:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+#tabbar{display:flex;align-items:center;gap:4px;margin:0 auto;align-self:center}
 #tabbar[hidden]{display:none}
 .t-tab{display:flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 18px;background:none;border:0;border-radius:999px;color:var(--muted);font-size:15px;font-weight:500;cursor:pointer}
 .t-tab:hover{background:var(--soft)}
@@ -614,7 +614,7 @@ body[data-view="analyser"] #trk{display:none}
 @media(prefers-reduced-motion:reduce){.t-bar i,#t-toast{transition:none}}
 @media(max-width:720px){
   body.has-tabs{padding-bottom:76px}
-  #tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;gap:0;border-bottom:0;border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left))}
+  #tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;gap:0;margin:0;background:var(--bg);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left))}
   .t-tab{flex-direction:column;gap:2px;min-height:52px;padding:0;border-radius:12px;font-size:12px}
   .t-tab[aria-current="page"]{background:none}
   .t-ico{font-size:20px}
@@ -714,7 +714,7 @@ body[data-view="analyser"] #trk{display:none}
 </nav>
 <section id="trk" aria-label="Spending tracker" hidden>
 <div class="t-head"><h2 class="t-title">Tracker</h2><div class="t-tools"><button type="button" class="t-ic" id="t-theme" aria-label="Switch between light and dark mode"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i></button><button type="button" class="t-ic" id="t-out" aria-label="Sign out"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i></button></div></div>
-<div class="t-month"><button type="button" class="t-ic" id="t-prev" aria-label="Previous month"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button><strong id="t-mlabel" aria-live="polite"></strong><button type="button" class="t-ic" id="t-next" aria-label="Next month"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div>
+<div class="t-month"><button type="button" class="t-ic" id="t-prev" aria-label="Previous period"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button><strong id="t-mlabel" aria-live="polite"></strong><button type="button" class="t-ic" id="t-next" aria-label="Next period"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div>
 <p class="t-warn" id="t-local" hidden><span id="t-localmsg"></span><button type="button" id="t-retry">Try again</button></p>
 <div class="t-hero" id="t-hero"></div>
 <div class="t-cats" id="t-cats"></div>
@@ -1399,7 +1399,11 @@ function safeCol(c){return/^#[0-9a-f]{6}$/i.test(c||"")?c:COLORS[0]}
 function pad(n){return String(n).padStart(2,"0")}
 function isoDay(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
 function rd(n){return Math.round(n*100)/100}
-function today(){var d=new Date();return{y:d.getFullYear(),mo:d.getMonth()}}
+var START=27; /* Amex statement period: the 27th to the 26th. Change this number if your statement date moves. */
+function periodOf(d){var y=d.getFullYear(),mo=d.getMonth();if(d.getDate()<START){mo--;if(mo<0){mo=11;y--}}return{y:y,mo:mo}}
+function pStart(m){return isoDay(new Date(m.y,m.mo,START))}
+function pEnd(m){return isoDay(new Date(m.y,m.mo+1,START-1))}
+function today(){return periodOf(new Date())}
 function uid(){
   if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
   var b=new Uint8Array(16);crypto.getRandomValues(b);b[6]=b[6]&15|64;b[8]=b[8]&63|128;
@@ -1487,22 +1491,23 @@ function dayLabel(d){
   return dt.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}
 function render(){
   if(!T.m||!T.uid)return;
-  var k=T.m.y+"-"+pad(T.m.mo+1),cur=today(),isNow=T.m.y===cur.y&&T.m.mo===cur.mo;
-  var list=T.txs.filter(function(t){return t.date.slice(0,7)===k}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0});
+  var ps=pStart(T.m),pe=pEnd(T.m),cur=today(),isNow=T.m.y===cur.y&&T.m.mo===cur.mo;
+  var list=T.txs.filter(function(t){return t.date>=ps&&t.date<=pe}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0});
   var sp={};list.forEach(function(t){sp[t.cat]=rd((sp[t.cat]||0)+t.amt)});
-  $("t-mlabel").textContent=new Date(T.m.y,T.m.mo,1).toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+  var fd=function(x){var q=x.split("-");return new Date(+q[0],q[1]-1,+q[2]).toLocaleDateString("en-GB",{day:"numeric",month:"short"})};
+  $("t-mlabel").textContent=fd(ps)+" – "+fd(pe)+" "+pe.slice(0,4);
   $("t-next").disabled=isNow;
 
   var spent=0,lim=0,lspent=0,n=0;
   T.cats.forEach(function(c){var s=sp[c.id]||0;spent=rd(spent+s);if(c.limit>0){lim=rd(lim+c.limit);lspent=rd(lspent+s);n++}});
-  var dl="";if(isNow){var now=new Date(),last=new Date(T.m.y,T.m.mo+1,0).getDate(),d=last-now.getDate()+1;dl=d===1?"Last day of the month":d+" days left this month"}
+  var dl="";if(isNow){var n0=new Date(),d=Math.round((new Date(T.m.y,T.m.mo+1,START-1)-new Date(n0.getFullYear(),n0.getMonth(),n0.getDate()))/864e5)+1;dl=d===1?"Last day of this period":d+" days left"}
   var h;
   if(n){
     var left=rd(lim-lspent),over=left<0,ratio=lspent/lim;
     h='<div class="t-hl">'+(over?"Over your limits by":"Left to spend")+'</div><div class="t-big'+(over?" over":"")+'">'+money.format(Math.abs(left))+'</div>'+
       '<div class="t-bar'+(over?" over":ratio>=.8?" warn":"")+'"><i style="width:'+Math.min(100,ratio*100)+'%"></i></div>'+
       '<div class="t-hs">'+money.format(lspent)+' of '+money.format(lim)+' used'+(dl?' · '+dl:'')+(spent!==lspent?'<br>Plus '+money.format(rd(spent-lspent))+' in categories with no limit':'')+'</div>'}
-  else h='<div class="t-hl">Spent this month</div><div class="t-big" style="margin-bottom:0">'+money.format(spent)+'</div><div class="t-hs">'+(T.cats.length?'Set a limit on a category to see how much is left.':'Add a category to get started.')+(dl?' · '+dl:'')+'</div>';
+  else h='<div class="t-hl">Spent this period</div><div class="t-big" style="margin-bottom:0">'+money.format(spent)+'</div><div class="t-hs">'+(T.cats.length?'Set a limit on a category to see how much is left.':'Add a category to get started.')+(dl?' · '+dl:'')+'</div>';
   $("t-hero").innerHTML=h;
 
   $("t-cats").innerHTML=T.cats.map(function(c){
@@ -1523,11 +1528,20 @@ function render(){
     var c=cm[t.cat];if(!c)return;
     if(t.date!==last){last=t.date;out+='<div class="t-day">'+dayLabel(t.date)+'</div>'}
     out+='<button type="button" class="t-row" data-act="edittx" data-id="'+esc(t.id)+'" style="--c:'+safeCol(c.color)+'"><span class="t-dot"></span><span class="t-rtxt"><b>'+esc(t.note||c.name)+'</b>'+(t.note?'<small>'+esc(c.name)+'</small>':'')+'</span><span class="t-ramt'+(t.amt<0?" neg":"")+'">'+money.format(t.amt)+'</span></button>'});
-  $("t-list").innerHTML=out||'<div class="t-empty">'+(fc?"Nothing in "+esc(fc.name)+" this month.":isNow?"No spends yet this month. Tap Add when you spend something.":"No spends in this month.")+'</div>'}
+  $("t-list").innerHTML=out||'<div class="t-empty">'+(fc?"Nothing in "+esc(fc.name)+" this period.":isNow?"No spends yet this period. Tap Add when you spend something.":"No spends in this period.")+'</div>'}
 
 /* ----- navigation ----- */
+var mq=matchMedia("(max-width:720px)");
+/* phones: bottom bar. Desktop: the switch sits in the page heading, between the title and the buttons */
+function placeTabs(){
+  var tb=$("tabbar");
+  if(mq.matches){if(tb.parentNode!==document.body)document.body.insertBefore(tb,$("trk"));return}
+  var tr=document.body.dataset.view==="tracker",host=document.querySelector(tr?"#trk .t-head":"main .top");if(!host)return;
+  var anchor=host.querySelector(tr?".t-tools":".who");
+  if(tb.parentNode!==host||tb.nextElementSibling!==anchor)host.insertBefore(tb,anchor)}
+if(mq.addEventListener)mq.addEventListener("change",placeTabs);
 function setView(v){
-  document.body.dataset.view=v;
+  document.body.dataset.view=v;placeTabs();
   Array.prototype.forEach.call(document.querySelectorAll("#tabbar [data-v]"),function(b){if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   window.scrollTo(0,0);if(v==="tracker")render()}
 document.querySelectorAll("#tabbar [data-v]").forEach(function(b){b.onclick=function(){setView(b.dataset.v)}});
@@ -1561,7 +1575,7 @@ function openTx(id,pre){
   pickCat=editTx?editTx.cat:(pre||T.filter||T.cats[0].id);
   drawPick();
   $("t-note").value=editTx?editTx.note:"";
-  $("t-date").value=editTx?editTx.date:isNow?isoDay(new Date()):isoDay(new Date(T.m.y,T.m.mo+1,0));
+  $("t-date").value=editTx?editTx.date:isNow?isoDay(new Date()):pEnd(T.m);
   $("t-txdel").hidden=!editTx;$("t-txerr").textContent="";
   $("t-tx").showModal();if(!editTx)$("t-amt").focus()}
 $("t-txf").onsubmit=function(e){
@@ -1572,7 +1586,7 @@ $("t-txf").onsubmit=function(e){
   var note=$("t-note").value.trim().slice(0,80),t;
   if(editTx){editTx.amt=a;editTx.cat=pickCat;editTx.note=note;editTx.date=d;t=editTx}
   else{t={id:uid(),cat:pickCat,amt:a,note:note,date:d};T.txs.unshift(t)}
-  var p=d.split("-");T.m={y:+p[0],mo:+p[1]-1};
+  var p=d.split("-");T.m=periodOf(new Date(+p[0],+p[1]-1,+p[2]));
   if(T.filter&&T.filter!==pickCat)T.filter=null;
   var cn=(T.cats.find(function(c){return c.id===pickCat})||{}).name||"";
   $("t-tx").close();render();saveTx(t);
